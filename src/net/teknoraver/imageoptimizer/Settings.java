@@ -88,11 +88,11 @@ public class Settings extends PreferenceActivity {
 
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
-		public boolean onPreferenceChange(Preference preference,
-				Object value) {
+		public boolean onPreferenceChange(Preference preference, Object value) {
 			String stringValue = value.toString();
 
 			if (preference.getKey().equals("quality")) {
+				
 				preference.setSummary("Jpeg compression to " + stringValue + "%");
 			}
 			return true;

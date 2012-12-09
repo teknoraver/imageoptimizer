@@ -5,24 +5,25 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class Browser extends Activity implements FileFilter {
+public class Browser extends Activity implements FileFilter, OnClickListener {
 	ArrayList<File> all = new ArrayList<File>();
 
 	@Override
@@ -34,6 +35,8 @@ public class Browser extends Activity implements FileFilter {
 
 		ListView g = (ListView)findViewById(R.id.gallery);
 		g.setAdapter(new ImageAdapter(this, all));
+
+		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
 	}
 
 	@Override
@@ -74,6 +77,12 @@ public class Browser extends Activity implements FileFilter {
 			return true;
 		}
 		return super.onContextItemSelected(item);
+	}
+
+	@Override
+	public void onClick(View v) {
+		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
+		Jpegoptim jo = new Jpegoptim(all, pm.getBoolean("lossy", false), pm.getInt("quality", 75));
 	}
 }
 
@@ -140,14 +149,6 @@ class ImageAdapter extends BaseAdapter
 		return v;
 	}
 
-	@Override
-	public Object getItem(int position) {
-		return null;
-	}
-
-	@Override
-	public long getItemId(int position) {
-		return 0;
-	}
-
+	@Override public Object getItem(int position) { return null; }
+	@Override public long getItemId(int position) { return 0; }
 }
