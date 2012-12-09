@@ -14,13 +14,21 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="net.teknoraver.imageoptimizer.Browser"
+            android:name=".Browser"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".Settings"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".Browser" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Browser" />
         </activity>
     </application>
 

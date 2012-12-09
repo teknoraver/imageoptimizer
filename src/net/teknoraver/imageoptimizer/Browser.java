@@ -6,12 +6,14 @@ import java.util.ArrayList;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -63,6 +65,15 @@ public class Browser extends Activity implements FileFilter {
 		if(pathname.getName().endsWith(".jpg"))
 			return true;
 		return false;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if(item.getItemId() == R.id.menu_settings) {
+			startActivity(new Intent(this, Settings.class));
+			return true;
+		}
+		return super.onContextItemSelected(item);
 	}
 }
 

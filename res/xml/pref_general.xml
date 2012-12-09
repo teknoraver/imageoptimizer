@@ -1,0 +1,16 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<CheckBoxPreference
+		android:defaultValue="true"
+		android:key="lossy"
+		android:title="@string/pref_title_lossy"
+		android:summary="@string/pref_description_lossy" />
+
+	<EditTextPreference
+		android:defaultValue="75"
+		android:key="quality"
+		android:title="@string/title_quality"
+		android:summary="@string/desc_quality"
+		android:dependency="lossy"/>
+
+</PreferenceScreen>
