@@ -37,7 +37,7 @@ public class Browser extends Activity implements FileFilter, OnClickListener, Ob
 		setContentView(R.layout.activity_browser);
 
 		ArrayList<File> all = new ArrayList<File>();
-		scan(new File("/mnt/sdcard/DCIM"), all);
+		scan(new File("/mnt/sdcard/optim"), all);
 
 		list = (ListView)findViewById(R.id.gallery);
 		list.setAdapter(new ImageAdapter(this, all));
