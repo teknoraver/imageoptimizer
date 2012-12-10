@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,7 +37,7 @@ public class Browser extends Activity implements FileFilter, OnClickListener, Ob
 		setContentView(R.layout.activity_browser);
 
 		ArrayList<File> all = new ArrayList<File>();
-		scan(new File("/mnt/sdcard"), all);
+		scan(new File("/mnt/sdcard/DCIM"), all);
 
 		list = (ListView)findViewById(R.id.gallery);
 		list.setAdapter(new ImageAdapter(this, all));
@@ -96,7 +95,7 @@ System.out.println("adding " + child.getAbsolutePath());
 			View row = (View)list.getChildAt(i);
 			CheckBox ch = (CheckBox)row.findViewById(R.id.checkbox);
 			if(ch.isChecked())
-				checked.add((String)list.getItemAtPosition(i));
+				checked.add(((File)list.getItemAtPosition(i)).getAbsolutePath());
 		}
 		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
 		jo.addObserver(this);
