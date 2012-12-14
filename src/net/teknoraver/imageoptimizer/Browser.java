@@ -10,8 +10,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -24,20 +26,31 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class Browser extends Activity implements FileFilter, OnClickListener, Observer {
 	private ListView list;
+	private AlertDialog progress;
+	private final Handler handler = new Handler();
+	private String msg;
+	private ProgressBar perc;
+	private TextView txt;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_browser);
 
+//		ProgressDialog pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
+
 		ArrayList<File> all = new ArrayList<File>();
 		scan(new File("/mnt/sdcard/optim"), all);
+
+//		pd.cancel();
 
 		list = (ListView)findViewById(R.id.gallery);
 		list.setAdapter(new ImageAdapter(this, all));
@@ -97,12 +110,26 @@ System.out.println("adding " + child.getAbsolutePath());
 			if(ch.isChecked())
 				checked.add(((File)list.getItemAtPosition(i)).getAbsolutePath());
 		}
+		//pd = ProgressDialog.show(this, "Compressing", "", false);
+		progress = new AlertDialog.Builder(this)
+			.setTitle("Compressing")
+			.show();
+		progress.setContentView(R.layout.progress);
+		txt = (TextView)progress.findViewById(R.id.text);
+		perc = (ProgressBar)progress.findViewById(R.id.progress);
+		perc.setMax(checked.size());
+		perc.setProgress(1);
+
 		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
 		jo.addObserver(this);
+		new Thread(jo).start();
 	}
 
 	@Override
 	public void update(Observable observable, Object data) {
+		msg = (String)data;
+		System.out.println("update(): " + msg);
+		handler.post(compresser);
 	}
 
 	private void getFile(final String name) {
@@ -125,6 +152,16 @@ System.out.println("adding " + child.getAbsolutePath());
                                 return;
                         }
         }
+
+	private Runnable compresser = new Runnable() {
+		@Override
+		public void run() {
+			perc.setProgress(perc.getProgress() + 1);
+			txt.setText(msg);
+			if(perc.getProgress() == perc.getMax())
+				progress.dismiss();
+		}
+	};
 }
 
 class ImageAdapter extends ArrayAdapter<File>

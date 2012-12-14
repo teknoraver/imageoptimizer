@@ -1,6 +1,5 @@
 package net.teknoraver.imageoptimizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -16,7 +15,6 @@ public class Jpegoptim extends Observable implements Runnable {
 		quality = q;
 		files = checked;
 		bin = b;
-		new Thread(this).start();
 	}
 
 	@Override
@@ -31,11 +29,23 @@ public class Jpegoptim extends Observable implements Runnable {
 		}
 		for(String file : files) {
 			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+//			System.out.println("jpegoptim " + file);
+			try {
 				args[1] = file;
 				Runtime.getRuntime().exec(args);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			notifyObservers(file);
 		}
+	}
+
+	@Override
+	public boolean hasChanged() {
+		return true;
 	}
 }
