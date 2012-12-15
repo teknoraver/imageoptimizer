@@ -10,8 +10,9 @@
 	<!-- Settings -->
     <string name="title_activity_settings">Settings</string>
     <string name="pref_header_general">General</string>
-    <string name="pref_title_lossy">Lossy compression</string>
-    <string name="pref_description_lossy">Use lossy compression</string>
+    <string name="pref_title_lossless">Optimize only images</string>
+    <string name="pref_title_lossy">Compress images</string>
+    <string name="pref_description_lossy">Compress images</string>
     <string name="title_quality">Quality level</string>
     <string name="desc_quality">JPEG compression</string>
 		

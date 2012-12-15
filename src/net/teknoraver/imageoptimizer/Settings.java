@@ -1,10 +1,8 @@
 package net.teknoraver.imageoptimizer;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -83,31 +81,38 @@ public class Settings extends PreferenceActivity {
 
 		// Add 'general' preferences.
 		addPreferencesFromResource(R.xml.pref_general);
+		bindPreferenceSummaryToValue(findPreference("lossy"));
 		bindPreferenceSummaryToValue(findPreference("quality"));
 	}
 
-	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			String stringValue = value.toString();
-
 			if (preference.getKey().equals("quality")) {
-				
+				String stringValue = value.toString();
 				preference.setSummary("Jpeg compression to " + stringValue + "%");
+			} else if (preference.getKey().equals("lossy")) {
+				if((Boolean)value)
+					preference.setSummary(getString(R.string.pref_title_lossy));
+				else
+					preference.setSummary(getString(R.string.pref_title_lossless));
 			}
 			return true;
 		}
 	};
 
-	private static void bindPreferenceSummaryToValue(Preference preference) {
+	private void bindPreferenceSummaryToValue(Preference preference) {
 		// Set the listener to watch for value changes.
 		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
 		// Trigger the listener immediately with the preference's
 		// current value.
-		sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-			PreferenceManager.getDefaultSharedPreferences(preference.getContext())
-			.getString(preference.getKey(), ""));
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
+
+		if(preference.getKey().equals("quality"))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "75"));
+		else if(preference.getKey().equals("lossy"))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
 	}
 
 	/** {@inheritDoc} */
@@ -133,8 +138,8 @@ public class Settings extends PreferenceActivity {
 	 */
 	private static boolean isSimplePreferences(Context context) {
 		return ALWAYS_SIMPLE_PREFS
-				|| Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
-				|| !isXLargeTablet(context);
+			|| Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
+			|| !isXLargeTablet(context);
 	}
 
 	/** {@inheritDoc} */
@@ -150,13 +155,14 @@ public class Settings extends PreferenceActivity {
 	 * activity is showing a two-pane settings UI.
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class GeneralPreferenceFragment extends
+	public class GeneralPreferenceFragment extends
 			PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_general);
 
+			bindPreferenceSummaryToValue(findPreference("lossy"));
 			bindPreferenceSummaryToValue(findPreference("quality"));
 		}
 	}
