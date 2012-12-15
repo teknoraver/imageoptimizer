@@ -28,20 +28,16 @@ public class Jpegoptim extends Observable implements Runnable {
 			args = new String[]{bin, null, "-T10", "-m" + quality};
 		}
 		for(String file : files) {
+			notifyObservers(file);
 			try {
 				Thread.sleep(1000);
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
-//			System.out.println("jpegoptim " + file);
-			try {
 				args[1] = file;
 				Runtime.getRuntime().exec(args);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			notifyObservers(file);
 		}
+		notifyObservers(null);
 	}
 
 	@Override

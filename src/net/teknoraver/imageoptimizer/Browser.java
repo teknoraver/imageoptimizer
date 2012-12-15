@@ -12,33 +12,35 @@ import java.util.Observer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class Browser extends Activity implements FileFilter, OnClickListener, Observer {
+public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer {
 	private ListView list;
-	private AlertDialog progress;
+	private ProgressDialogFragment progress;
 	private final Handler handler = new Handler();
 	private String msg;
-	private ProgressBar perc;
-	private TextView txt;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -110,15 +112,8 @@ System.out.println("adding " + child.getAbsolutePath());
 			if(ch.isChecked())
 				checked.add(((File)list.getItemAtPosition(i)).getAbsolutePath());
 		}
-		//pd = ProgressDialog.show(this, "Compressing", "", false);
-		progress = new AlertDialog.Builder(this)
-			.setTitle("Compressing")
-			.show();
-		progress.setContentView(R.layout.progress);
-		txt = (TextView)progress.findViewById(R.id.text);
-		perc = (ProgressBar)progress.findViewById(R.id.progress);
-		perc.setMax(checked.size());
-		perc.setProgress(1);
+		progress = new ProgressDialogFragment(checked.size());
+		progress.show(getSupportFragmentManager(), "missiles");
 
 		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
 		jo.addObserver(this);
@@ -127,9 +122,13 @@ System.out.println("adding " + child.getAbsolutePath());
 
 	@Override
 	public void update(Observable observable, Object data) {
-		msg = (String)data;
-		System.out.println("update(): " + msg);
-		handler.post(compresser);
+		if(data == null)
+			progress.dismiss();
+		else {
+			msg = (String)data;
+			System.out.println("update(): " + msg);
+			handler.post(compresser);
+		}
 	}
 
 	private void getFile(final String name) {
@@ -156,12 +155,41 @@ System.out.println("adding " + child.getAbsolutePath());
 	private Runnable compresser = new Runnable() {
 		@Override
 		public void run() {
-			perc.setProgress(perc.getProgress() + 1);
-			txt.setText(msg);
-			if(perc.getProgress() == perc.getMax())
-				progress.dismiss();
+			progress.advance(msg);
 		}
 	};
+}
+
+class ProgressDialogFragment extends DialogFragment {
+	private TextView txt;
+	private ProgressBar perc;
+	private int size;
+
+	ProgressDialogFragment(int i) {
+		size = i;
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.progress, container);
+		txt = (TextView)v.findViewById(R.id.text);
+		perc = (ProgressBar)v.findViewById(R.id.progress);
+		perc.setMax(size);
+		perc.setProgress(0);
+		return v;
+	}
+
+	@Override
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		Dialog dialog = super.onCreateDialog(savedInstanceState);
+		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		return dialog;
+	}
+
+	public void advance(String msg) {
+		perc.setProgress(perc.getProgress() + 1);
+		txt.setText(msg);
+	}
 }
 
 class ImageAdapter extends ArrayAdapter<File>
