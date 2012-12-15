@@ -28,7 +28,7 @@ public class Jpegoptim extends Observable implements Runnable {
 			args = new String[]{bin, null, "-T10", "-m" + quality};
 		}
 		for(String file : files) {
-			notifyObservers(file);
+			notifyObservers(file.substring(file.lastIndexOf('/') + 1));
 			try {
 				Thread.sleep(1000);
 				args[1] = file;

@@ -15,7 +15,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,7 +26,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -113,7 +111,7 @@ System.out.println("adding " + child.getAbsolutePath());
 				checked.add(((File)list.getItemAtPosition(i)).getAbsolutePath());
 		}
 		progress = new ProgressDialogFragment(checked.size());
-		progress.show(getSupportFragmentManager(), "missiles");
+		progress.show(getSupportFragmentManager(), "compress");
 
 		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
 		jo.addObserver(this);
@@ -175,14 +173,13 @@ class ProgressDialogFragment extends DialogFragment {
 		txt = (TextView)v.findViewById(R.id.text);
 		perc = (ProgressBar)v.findViewById(R.id.progress);
 		perc.setMax(size);
-		perc.setProgress(0);
 		return v;
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Dialog dialog = super.onCreateDialog(savedInstanceState);
-		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialog.setTitle(R.string.compress);
 		return dialog;
 	}
 
@@ -206,8 +203,7 @@ class ImageAdapter extends ArrayAdapter<File>
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
-		if(convertView == null)
-		{
+		if(convertView == null) {
 			System.out.println("position " + position + ": " + getItem(position).getAbsolutePath());
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);
 		}
