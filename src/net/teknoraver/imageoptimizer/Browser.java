@@ -16,6 +16,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -34,29 +35,25 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer {
+public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer, Runnable {
 	private ListView list;
 	private ProgressDialogFragment progress;
 	private final Handler handler = new Handler();
 	private String msg;
+	private ProgressDialog pd;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_browser);
 
-//		ProgressDialog pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
-
-		ArrayList<File> all = new ArrayList<File>();
-		scan(new File("/mnt/sdcard/optim"), all);
-
-//		pd.cancel();
-
+		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
 		list = (ListView)findViewById(R.id.gallery);
-		list.setAdapter(new ImageAdapter(this, all));
 
 		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
 		getFile("jpegoptim");
+
+		new Thread(this).start();
 	}
 
 	@Override
@@ -156,6 +153,19 @@ System.out.println("adding " + child.getAbsolutePath());
 			progress.advance(msg);
 		}
 	};
+	@Override
+	public void run() {
+		final ArrayList<File> all = new ArrayList<File>();
+		Runnable pdclose = new Runnable() {
+			@Override
+			public void run() {
+				list.setAdapter(new ImageAdapter(Browser.this, all));
+				pd.dismiss();
+			}
+		};
+		scan(new File("/mnt/sdcard/DCIM"), all);
+		handler.post(pdclose); 
+	}
 }
 
 class ProgressDialogFragment extends DialogFragment {
