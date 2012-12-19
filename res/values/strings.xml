@@ -6,7 +6,9 @@
 	<string name="optimize">Optimize</string>
 
 	<string name="compress">Compressing</string>
-
+	<string name="sall">Select all</string>
+	<string name="snone">Select none</string>
+	
 	<!-- Settings -->
     <string name="title_activity_settings">Settings</string>
     <string name="pref_header_general">General</string>

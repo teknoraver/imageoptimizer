@@ -45,7 +45,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_browser);
+		setContentView(R.layout.browser);
 
 		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
 		list = (ListView)findViewById(R.id.gallery);
@@ -58,7 +58,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_browser, menu);
+		getMenuInflater().inflate(R.menu.browser, menu);
 		return true;
 	}
 
