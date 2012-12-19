@@ -90,9 +90,19 @@ System.out.println("adding " + child.getAbsolutePath());
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if(item.getItemId() == R.id.menu_settings) {
+		switch(item.getItemId()) {
+		case R.id.menu_settings:
 			startActivity(new Intent(this, Settings.class));
 			return true;
+		case R.id.menu_all:
+		case R.id.menu_none:
+			for(int i = 0; i < list.getChildCount(); i++) {
+				View row = (View)list.getChildAt(i);
+				CheckBox ch = (CheckBox)row.findViewById(R.id.checkbox);
+				ch.setChecked(item.getItemId() == R.id.menu_all);
+			}
+			return true;
+
 		}
 		return super.onContextItemSelected(item);
 	}
