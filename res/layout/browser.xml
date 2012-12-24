@@ -5,17 +5,19 @@
 	tools:context=".Browser" >
 
 	<Button
-		android:id="@+id/optimize"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentLeft="true"
-		android:text="@string/optimize" />
+	    android:id="@+id/optimize"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignParentLeft="true"
+	    android:text="@string/optimize" />
 
 	<ListView
-		android:id="@+id/gallery"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:layout_above="@+id/optimize" />
+	    android:id="@+id/gallery"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:layout_above="@+id/optimize">
+
+	</ListView>
 
 </RelativeLayout>
