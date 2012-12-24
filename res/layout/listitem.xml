@@ -34,8 +34,8 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
 	    android:layout_alignParentTop="true"
-	    android:layout_alignRight="@+id/grid_item_image"
-	    android:src="@android:drawable/checkbox_off_background"
+	    android:layout_alignParentLeft="true"
+	    android:src="@drawable/off"
 	    android:contentDescription="@string/compress"/>
 
 </RelativeLayout>

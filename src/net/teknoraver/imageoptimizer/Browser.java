@@ -29,10 +29,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -86,10 +84,8 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 			for (File child : children)
 				if(child.isDirectory())
 					scan(child, all);
-				else {
-					Image i = new Image(child.getAbsolutePath(), child.length());
-					all.add(i);
-				}
+				else
+					all.add(new Image(child.getAbsolutePath(), child.length()));
 	}
 
 	@Override
@@ -111,11 +107,11 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 			return true;
 		case R.id.menu_all:
 		case R.id.menu_none:
-			for(int i = 0; i < list.getChildCount(); i++) {
-				View row = (View)list.getChildAt(i);
-				CheckBox ch = (CheckBox)row.findViewById(R.id.checkbox);
-				ch.setChecked(item.getItemId() == R.id.menu_all);
+			for(int i = 0; i < list.getCount(); i++) {
+				Image row = (Image)list.getItemAtPosition(i);
+				row.compress = item.getItemId() == R.id.menu_all;
 			}
+			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
 
 		}
@@ -128,10 +124,8 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		ArrayList<String> checked = new ArrayList<String>(list.getCount());
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
-			if(row.compress) {
-System.out.println("compressing " + row.path);
+			if(row.compress)
 				checked.add(row.path);
-			}
 		}
 		if(checked.isEmpty())
 			return;
@@ -202,9 +196,9 @@ System.out.println("compressing " + row.path);
 		Image i = (Image)parent.getItemAtPosition(position);
 		i.compress = !i.compress;
 		if(i.compress)
-			c.setImageResource(android.R.drawable.checkbox_on_background);
+			c.setImageResource(R.drawable.on);
 		else
-			c.setImageResource(android.R.drawable.checkbox_off_background);
+			c.setImageResource(R.drawable.off);
 	}
 }
 
@@ -284,6 +278,13 @@ class ImageAdapter extends ArrayAdapter<Image>
 		else
 			length = ((int)(len / 10485.76)) / 100.0 + " Mb";
 		size.setText(length);
+
+		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
+		Image i = (Image)getItem(position);
+		if(i.compress)
+			c.setImageResource(R.drawable.on);
+		else
+			c.setImageResource(R.drawable.off);
 
 		return convertView;
 	}
