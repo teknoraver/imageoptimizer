@@ -27,6 +27,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -35,7 +38,21 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer, Runnable {
+class Image {
+	String path;
+	boolean compress;
+	public long size;
+	public Image(String f, long s) {
+		path = f;
+		size = s;
+	}
+	String getName()
+	{
+		return path.substring(path.lastIndexOf('/') + 1);
+	}
+}
+
+public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer, Runnable, OnItemClickListener {
 	private ListView list;
 	private ProgressDialogFragment progress;
 	private final Handler handler = new Handler();
@@ -45,10 +62,11 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_browser);
+		setContentView(R.layout.browser);
 
 		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
 		list = (ListView)findViewById(R.id.gallery);
+		list.setOnItemClickListener(this);
 
 		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
 		getFile("jpegoptim");
@@ -62,19 +80,16 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		return true;
 	}
 
-	private void scan(File file, ArrayList<File> all) {
+	private void scan(File file, ArrayList<Image> all) {
 		File children[] = file.listFiles(this);
-		if (children != null) {
-System.out.println("Scanning " + file.getAbsolutePath());
-			for (File child : children) {
+		if (children != null)
+			for (File child : children)
 				if(child.isDirectory())
 					scan(child, all);
 				else {
-System.out.println("adding " + child.getAbsolutePath());
-					all.add(child);
+					Image i = new Image(child.getAbsolutePath(), child.length());
+					all.add(i);
 				}
-			}
-		}
 	}
 
 	@Override
@@ -101,12 +116,15 @@ System.out.println("adding " + child.getAbsolutePath());
 	public void onClick(View v) {
 		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
 		ArrayList<String> checked = new ArrayList<String>(list.getCount());
-		for(int i = 0; i < list.getChildCount(); i++) {
-			View row = (View)list.getChildAt(i);
-			CheckBox ch = (CheckBox)row.findViewById(R.id.checkbox);
-			if(ch.isChecked())
-				checked.add(((File)list.getItemAtPosition(i)).getAbsolutePath());
+		for(int i = 0; i < list.getCount(); i++) {
+			Image row = (Image)list.getItemAtPosition(i);
+			if(row.compress) {
+System.out.println("compressing " + row.path);
+				checked.add(row.path);
+			}
 		}
+		if(checked.isEmpty())
+			return;
 		progress = new ProgressDialogFragment(checked.size());
 		progress.show(getSupportFragmentManager(), "compress");
 
@@ -153,9 +171,10 @@ System.out.println("adding " + child.getAbsolutePath());
 			progress.advance(msg);
 		}
 	};
+
 	@Override
 	public void run() {
-		final ArrayList<File> all = new ArrayList<File>();
+		final ArrayList<Image> all = new ArrayList<Image>();
 		Runnable pdclose = new Runnable() {
 			@Override
 			public void run() {
@@ -165,6 +184,17 @@ System.out.println("adding " + child.getAbsolutePath());
 		};
 		scan(new File("/mnt/sdcard/DCIM"), all);
 		handler.post(pdclose); 
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		ImageView c = (ImageView)view.findViewById(R.id.compress);
+		Image i = (Image)parent.getItemAtPosition(position);
+		i.compress = !i.compress;
+		if(i.compress)
+			c.setImageResource(android.R.drawable.checkbox_on_background);
+		else
+			c.setImageResource(android.R.drawable.checkbox_off_background);
 	}
 }
 
@@ -199,13 +229,13 @@ class ProgressDialogFragment extends DialogFragment {
 	}
 }
 
-class ImageAdapter extends ArrayAdapter<File>
+class ImageAdapter extends ArrayAdapter<Image>
 {
 	private static final int W = 320;
 	private static final int H = 240;
 	private static final float RATIO = (float)W / H;
 
-	public ImageAdapter(Activity a, ArrayList<File> f)
+	public ImageAdapter(Activity a, ArrayList<Image> f)
 	{
 		super(a, R.layout.listitem, f);
 	}
@@ -213,18 +243,18 @@ class ImageAdapter extends ArrayAdapter<File>
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
-		if(convertView == null) {
-			System.out.println("position " + position + ": " + getItem(position).getAbsolutePath());
+//		if(convertView == null) {
+			System.out.println("position " + position + ": " + getItem(position).path);
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);
-		}
+//		}
 
 		ImageView iv = (ImageView)convertView.findViewById(R.id.grid_item_image);
-		Bitmap bigbitmap = BitmapFactory.decodeFile(getItem(position).getAbsolutePath());
+		Bitmap bigbitmap = BitmapFactory.decodeFile(getItem(position).path);
 		float ratio = (float)bigbitmap.getWidth() / bigbitmap.getHeight();
 
 		Bitmap scaledbitmap;
 		if(ratio > RATIO)
-			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W * ratio), true);
+			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
 		if(ratio < RATIO)
 			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
 		else
@@ -235,7 +265,7 @@ class ImageAdapter extends ArrayAdapter<File>
 		name.setText(getItem(position).getName());
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
-		long len = getItem(position).length();
+		long len = getItem(position).size;
 		String length;
 		if(len < 1 << 10)
 			length = len + " bytes";

@@ -15,5 +15,6 @@
     <string name="pref_description_lossy">Compress images</string>
     <string name="title_quality">Quality level</string>
     <string name="desc_quality">JPEG compression</string>
+    <string name="image">image</string>
 		
 </resources>

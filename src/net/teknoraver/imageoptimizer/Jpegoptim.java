@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.Observable;
 
 public class Jpegoptim extends Observable implements Runnable {
-	private boolean lossy;
+	private boolean compress;
 	private int quality;
 	private ArrayList<String> files;
 	private String bin;
 
 	public Jpegoptim(String b, ArrayList<String> checked, boolean l, int q) {
-		lossy = l;
+		compress = l;
 		quality = q;
 		files = checked;
 		bin = b;
@@ -26,12 +26,11 @@ public class Jpegoptim extends Observable implements Runnable {
 			args.add(bin);
 			args.add("-b");
 			args.add("-T10");
-			if(lossy)
-				System.out.println("starting lossless jpegoptim");
-			else {
+			if(compress) {
 				System.out.println("starting lossy jpegoptim with quality " + quality);
 				args.add("-m" + quality);
-			}
+			} else
+				System.out.println("starting lossless jpegoptim");
 			args.addAll(files);
 			Process jpegoptim;
 			jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));

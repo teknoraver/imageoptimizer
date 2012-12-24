@@ -10,7 +10,8 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
 		android:layout_alignParentTop="true"
-		android:src="@drawable/ic_launcher"/>
+		android:src="@drawable/ic_launcher"
+		android:contentDescription="@string/image"/>
 
 	<TextView
 		android:id="@+id/name"
@@ -28,11 +29,13 @@
 		android:layout_below="@id/name"
 		android:textAppearance="?android:attr/textAppearanceSmall" />
 
-	<CheckBox
-		android:id="@+id/checkbox"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentRight="true" />
+	<ImageView
+	    android:id="@+id/compress"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentTop="true"
+	    android:layout_alignRight="@+id/grid_item_image"
+	    android:src="@android:drawable/checkbox_off_background"
+	    android:contentDescription="@string/compress"/>
 
 </RelativeLayout>
