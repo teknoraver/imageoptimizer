@@ -10,7 +10,7 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
 		android:layout_alignParentTop="true"
-		android:src="@drawable/ic_launcher"
+		android:src="@android:drawable/gallery_thumb"
 		android:contentDescription="@string/image"/>
 
 	<TextView

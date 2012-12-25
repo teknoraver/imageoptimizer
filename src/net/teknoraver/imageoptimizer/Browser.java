@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
-
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -238,6 +238,8 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private static final int W = 320;
 	private static final int H = 240;
 	private static final float RATIO = (float)W / H;
+	private ImageView updatingImage;
+	private String updatingPath;
 
 	public ImageAdapter(Activity a, ArrayList<Image> f)
 	{
@@ -248,22 +250,14 @@ class ImageAdapter extends ArrayAdapter<Image>
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
 //		if(convertView == null) {
-			System.out.println("position " + position + ": " + getItem(position).path);
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);
 //		}
 
-		ImageView iv = (ImageView)convertView.findViewById(R.id.grid_item_image);
-		Bitmap bigbitmap = BitmapFactory.decodeFile(getItem(position).path);
-		float ratio = (float)bigbitmap.getWidth() / bigbitmap.getHeight();
+		updatingImage = (ImageView)convertView.findViewById(R.id.grid_item_image);
+		updatingPath = getItem(position).path;
 
-		Bitmap scaledbitmap;
-		if(ratio > RATIO)
-			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
-		if(ratio < RATIO)
-			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
-		else
-			scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
-		iv.setImageBitmap(scaledbitmap);
+		Thumber thumber = new Thumber(updatingImage, updatingPath);
+		thumber.execute();
 
 		TextView name = (TextView)convertView.findViewById(R.id.name);
 		name.setText(getItem(position).getName());
@@ -287,5 +281,38 @@ class ImageAdapter extends ArrayAdapter<Image>
 			c.setImageResource(R.drawable.off);
 
 		return convertView;
+	}
+
+	class Thumber extends AsyncTask<Void, Void, Void>
+	{
+		private ImageView iv;
+		private String path;
+		private Bitmap scaledbitmap;
+
+		Thumber(ImageView i, String p) {
+			iv = i;
+			path = p;
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			System.out.println("decoding " + path);
+			Bitmap bigbitmap = BitmapFactory.decodeFile(path);
+			float ratio = (float)bigbitmap.getWidth() / bigbitmap.getHeight();
+
+			if(ratio > RATIO)
+				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
+			if(ratio < RATIO)
+				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
+			else
+				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			if(scaledbitmap != null)
+				iv.setImageBitmap(scaledbitmap);
+		}
 	}
 }
