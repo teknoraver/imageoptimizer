@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.view.MenuItem;
@@ -80,22 +81,38 @@ public class Settings extends PreferenceActivity {
 		// use the older PreferenceActivity APIs.
 
 		// Add 'general' preferences.
+		PreferenceCategory fakeHeader;
 		addPreferencesFromResource(R.xml.pref_general);
+		bindPreferenceSummaryToValue(findPreference("timestamp"));
+
+		// JPEG
+		fakeHeader = new PreferenceCategory(this);
+		fakeHeader.setTitle(R.string.pref_header_jpeg);
+		getPreferenceScreen().addPreference(fakeHeader);
+		addPreferencesFromResource(R.xml.pref_jpeg);
 		bindPreferenceSummaryToValue(findPreference("lossy"));
-		bindPreferenceSummaryToValue(findPreference("quality"));
+		bindPreferenceSummaryToValue(findPreference("jpegquality"));
+		bindPreferenceSummaryToValue(findPreference("threshold"));
+
+		// PNG
+		fakeHeader = new PreferenceCategory(this);
+		fakeHeader.setTitle(R.string.pref_header_png);
+		getPreferenceScreen().addPreference(fakeHeader);
+		addPreferencesFromResource(R.xml.pref_png);
 	}
 
 	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			if (preference.getKey().equals("quality")) {
-				String stringValue = value.toString();
-				preference.setSummary("Jpeg compression to " + stringValue + "%");
+			if (preference.getKey().equals("jpegquality")) {
+				preference.setSummary("Jpeg compression to " + value + "%");
 			} else if (preference.getKey().equals("lossy")) {
 				if((Boolean)value)
 					preference.setSummary(getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(getString(R.string.pref_title_lossless));
+			} else if (preference.getKey().equals("threshold")) {
+				preference.setSummary("Threshold " + value + "%");
 			}
 			return true;
 		}
@@ -109,10 +126,12 @@ public class Settings extends PreferenceActivity {
 		// current value.
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
 
-		if(preference.getKey().equals("quality"))
+		if(preference.getKey().equals("jpegquality"))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "75"));
 		else if(preference.getKey().equals("lossy"))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
+		else if(preference.getKey().equals("threshold"))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "10"));
 	}
 
 	/** {@inheritDoc} */
@@ -150,20 +169,38 @@ public class Settings extends PreferenceActivity {
 			loadHeadersFromResource(R.xml.pref_headers, target);
 	}
 
-	/**
-	 * This fragment shows general preferences only. It is used when the
-	 * activity is showing a two-pane settings UI.
-	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public class GeneralPreferenceFragment extends
-			PreferenceFragment {
+	public class GeneralPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_general);
 
+			bindPreferenceSummaryToValue(findPreference("timestamp"));
+		}
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public class JpegPreferenceFragment extends PreferenceFragment {
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.pref_jpeg);
+
 			bindPreferenceSummaryToValue(findPreference("lossy"));
-			bindPreferenceSummaryToValue(findPreference("quality"));
+			bindPreferenceSummaryToValue(findPreference("jpegquality"));
+			bindPreferenceSummaryToValue(findPreference("threshold"));
+		}
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public class PngPreferenceFragment extends PreferenceFragment {
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.pref_png);
+
+			bindPreferenceSummaryToValue(findPreference("pngquality"));
 		}
 	}
 }

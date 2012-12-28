@@ -2,8 +2,16 @@
 
     <!-- These settings headers are only used on tablets. -->
 
-    <header
-        android:fragment=".${activityClass}$GeneralPreferenceFragment"
-        android:title="@string/pref_header_general" />
+	<header
+		android:fragment=".${activityClass}$GeneralPreferenceFragment"
+		android:title="@string/pref_header_general" />
+
+	<header
+		android:fragment=".${activityClass}$JpegPreferenceFragment"
+		android:title="JPEG" />
+
+	<header
+		android:fragment=".${activityClass}$PngPreferenceFragment"
+		android:title="PNG" />
 
 </preference-headers>

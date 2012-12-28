@@ -133,7 +133,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		progress.setArguments(b);
 		progress.show(getSupportFragmentManager(), "compress");
 
-		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
+		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("jpegquality", "75")));
 		jo.addObserver(this);
 		new Thread(jo).start();
 	}
