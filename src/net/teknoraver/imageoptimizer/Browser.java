@@ -12,16 +12,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.view.LayoutInflater;
+import android.graphics.Rect;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,19 +31,19 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 class Image {
 	String path;
 	boolean compress;
-	public long size;
-	public Image(String f, long s) {
+	long size;
+
+	Image(String f, long s) {
 		path = f;
 		size = s;
 	}
-	String getName()
-	{
+
+	String getName() {
 		return path.substring(path.lastIndexOf('/') + 1);
 	}
 }
@@ -129,7 +127,10 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		}
 		if(checked.isEmpty())
 			return;
-		progress = new ProgressDialogFragment(checked.size());
+		progress = new ProgressDialogFragment();
+		Bundle b = new Bundle();
+		b.putInt(ProgressDialogFragment.SIZE, checked.size());
+		progress.setArguments(b);
 		progress.show(getSupportFragmentManager(), "compress");
 
 		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("quality", "75")));
@@ -200,38 +201,6 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		else
 			c.setImageResource(R.drawable.off);
 	}
-}
-
-class ProgressDialogFragment extends DialogFragment {
-	private TextView txt;
-	private ProgressBar perc;
-	private int size;
-
-	ProgressDialogFragment(int i) {
-		size = i;
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View v = inflater.inflate(R.layout.progress, container);
-		txt = (TextView)v.findViewById(R.id.text);
-		perc = (ProgressBar)v.findViewById(R.id.progress);
-		perc.setMax(size);
-		return v;
-	}
-
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		Dialog dialog = super.onCreateDialog(savedInstanceState);
-		dialog.setTitle(R.string.compress);
-		return dialog;
-	}
-
-	public void advance(String msg) {
-		perc.setProgress(perc.getProgress() + 1);
-		txt.setText(msg);
-	}
-}
 
 class ImageAdapter extends ArrayAdapter<Image>
 {
@@ -241,7 +210,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private ImageView updatingImage;
 	private String updatingPath;
 
-	public ImageAdapter(Activity a, ArrayList<Image> f)
+	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
 		super(a, R.layout.listitem, f);
 	}
@@ -283,19 +252,34 @@ class ImageAdapter extends ArrayAdapter<Image>
 		return convertView;
 	}
 
-	class Thumber extends AsyncTask<Void, Void, Void>
+	private class Thumber extends AsyncTask<Void, Void, Void>
 	{
 		private ImageView iv;
 		private String path;
 		private Bitmap scaledbitmap;
 
-		Thumber(ImageView i, String p) {
+		private Thumber(ImageView i, String p) {
 			iv = i;
 			path = p;
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
+			try { Thread.sleep(200); } catch (InterruptedException e) { }
+
+			Rect bounds = new Rect();
+			iv.getDrawingRect(bounds);
+
+			Rect listBounds = new Rect(list.getScrollX(), list.getScrollY(), list.getScrollX() + list.getWidth(), list.getScrollY() + list.getHeight());
+
+			System.out.println("bounds " + bounds);
+			System.out.println("listBounds " + listBounds);
+
+			if(!Rect.intersects(listBounds, bounds)) {
+				System.out.println("skipping invisible " + path);
+				return null;
+			}
+
 			System.out.println("decoding " + path);
 			Bitmap bigbitmap = BitmapFactory.decodeFile(path);
 			float ratio = (float)bigbitmap.getWidth() / bigbitmap.getHeight();
@@ -306,6 +290,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
 			else
 				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
+
 			return null;
 		}
 
@@ -315,4 +300,5 @@ class ImageAdapter extends ArrayAdapter<Image>
 				iv.setImageBitmap(scaledbitmap);
 		}
 	}
+}
 }
