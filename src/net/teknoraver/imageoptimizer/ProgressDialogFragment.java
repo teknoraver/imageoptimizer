@@ -1,6 +1,7 @@
 package net.teknoraver.imageoptimizer;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -34,6 +35,12 @@ public class ProgressDialogFragment extends DialogFragment {
 		Dialog dialog = super.onCreateDialog(savedInstanceState);
 		dialog.setTitle(R.string.compress);
 		return dialog;
+	}
+
+	@Override
+	public void onCancel(DialogInterface dialog) {
+		super.onCancel(dialog);
+		System.out.println("Aborting!");
 	}
 
 	void advance(String msg) {

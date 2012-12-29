@@ -2,15 +2,13 @@
 
 	<CheckBoxPreference
 		android:defaultValue="true"
-		android:key="png"
-		android:title="PNG"
-		android:summary="PNG" />
+		android:key="dopng"
+		android:title="@string/dopng" />
 
 	<EditTextPreference
 		android:defaultValue="7"
 		android:key="pngquality"
-		android:title="PNG Q"
-		android:summary="PNG Q"
-		android:dependency="png"/>
+		android:title="@string/pngquality"
+		android:dependency="dopng"/>
 	
 </PreferenceScreen>

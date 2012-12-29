@@ -10,15 +10,22 @@
 	<string name="snone">Select none</string>
 	
 	<!-- Settings -->
-    <string name="title_activity_settings">Settings</string>
-    <string name="pref_header_general">General</string>
-    <string name="pref_title_lossless">Optimize only images</string>
-    <string name="pref_title_lossy">Compress images</string>
-    <string name="pref_description_lossy">Compress images</string>
-    <string name="title_quality">Quality level</string>
-    <string name="desc_quality">JPEG compression</string>
-    <string name="image">image</string>
-    <string name="pref_header_jpeg">JPEG Options</string>
-    <string name="pref_header_png">PNG Options</string>
-    		
+	<string name="title_activity_settings">Settings</string>
+	<string name="timestamp">Preserve files timestamp</string>
+	<string name="pref_header_general">General</string>
+	<string name="pref_title_lossy">Compress images</string>
+	<string name="pref_description_lossy">Compress images</string>
+	<string name="pref_title_lossless">Optimize only images</string>
+	<string name="title_quality">Quality level</string>
+	<string name="jpegquality_summary">Set JPEG compression to</string>
+	<string name="desc_quality">JPEG compression</string>
+	<string name="threshold">Threshold</string>
+	<string name="threshold_summary">Skip file if compression saves less than</string>
+	<string name="image">image</string>
+	<string name="pref_header_jpeg">JPEG Options</string>
+	<string name="pref_header_png">PNG Options</string>
+	<string name="dojpeg">Compress JPEG files</string>
+	<string name="dopng">Compress PNG files</string>
+	<string name="pngquality">PNG Quality</string>
+
 </resources>

@@ -90,6 +90,7 @@ public class Settings extends PreferenceActivity {
 		fakeHeader.setTitle(R.string.pref_header_jpeg);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_jpeg);
+		bindPreferenceSummaryToValue(findPreference("dojpeg"));
 		bindPreferenceSummaryToValue(findPreference("lossy"));
 		bindPreferenceSummaryToValue(findPreference("jpegquality"));
 		bindPreferenceSummaryToValue(findPreference("threshold"));
@@ -99,20 +100,23 @@ public class Settings extends PreferenceActivity {
 		fakeHeader.setTitle(R.string.pref_header_png);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_png);
+		bindPreferenceSummaryToValue(findPreference("pngquality"));
 	}
 
 	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			if (preference.getKey().equals("jpegquality")) {
-				preference.setSummary("Jpeg compression to " + value + "%");
+				preference.setSummary(getString(R.string.jpegquality_summary) + " " + value + "%");
 			} else if (preference.getKey().equals("lossy")) {
 				if((Boolean)value)
 					preference.setSummary(getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(getString(R.string.pref_title_lossless));
 			} else if (preference.getKey().equals("threshold")) {
-				preference.setSummary("Threshold " + value + "%");
+				preference.setSummary(getString(R.string.threshold_summary) + " " + value + "%");
+			} else if (preference.getKey().equals("pngquality")) {
+				preference.setSummary("Compression level " + value);
 			}
 			return true;
 		}
@@ -132,6 +136,10 @@ public class Settings extends PreferenceActivity {
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
 		else if(preference.getKey().equals("threshold"))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "10"));
+		else if(preference.getKey().equals("dopng"))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), true));
+		else if(preference.getKey().equals("pngquality"))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "7"));
 	}
 
 	/** {@inheritDoc} */

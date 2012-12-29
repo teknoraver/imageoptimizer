@@ -11,12 +11,17 @@ public class Jpegoptim extends Observable implements Runnable {
 	private int quality;
 	private ArrayList<String> files;
 	private String bin;
+	private boolean preserve;
+	private int threshold;
+	private Process jpegoptim;
 
-	public Jpegoptim(String b, ArrayList<String> checked, boolean l, int q) {
+	public Jpegoptim(String b, ArrayList<String> checked, boolean l, int q, boolean p, int t) {
 		compress = l;
 		quality = q;
 		files = checked;
 		bin = b;
+		preserve = p;
+		threshold = t;
 	}
 
 	@Override
@@ -25,14 +30,13 @@ public class Jpegoptim extends Observable implements Runnable {
 			ArrayList<String> args = new ArrayList<String>(files.size() + 4);
 			args.add(bin);
 			args.add("-b");
-			args.add("-T10");
-			if(compress) {
-				System.out.println("starting lossy jpegoptim with quality " + quality);
+			args.add("-T" + threshold);
+			if(compress)
 				args.add("-m" + quality);
-			} else
-				System.out.println("starting lossless jpegoptim");
+			if(preserve)
+				args.add("-p");
 			args.addAll(files);
-			Process jpegoptim;
+			System.out.println("starting jpegoptim");
 			jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()));
 			String line;
@@ -43,11 +47,18 @@ public class Jpegoptim extends Observable implements Runnable {
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
+		jpegoptim = null;
+		files = null;
 		notifyObservers(null);
 	}
 
 	@Override
 	public boolean hasChanged() {
 		return true;
+	}
+
+	void abort() {
+		if(jpegoptim != null)
+			jpegoptim.destroy();
 	}
 }

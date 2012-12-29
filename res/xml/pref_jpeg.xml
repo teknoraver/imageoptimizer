@@ -2,16 +2,15 @@
 
 	<CheckBoxPreference
 		android:defaultValue="true"
-		android:key="jpeg"
-		android:title="JPEG"
-		android:summary="JPEG" />
+		android:key="dojpeg"
+		android:title="@string/dojpeg" />
 
 	<CheckBoxPreference
 		android:defaultValue="true"
 		android:key="lossy"
 		android:title="@string/pref_title_lossy"
 		android:summary="@string/pref_description_lossy"
-		android:dependency="jpeg" />
+		android:dependency="dojpeg" />
 
 	<EditTextPreference
 		android:defaultValue="75"
@@ -23,8 +22,7 @@
 	<EditTextPreference
 		android:defaultValue="10"
 		android:key="threshold"
-		android:title="threshold"
-		android:summary="threshold"
+		android:title="@string/threshold"
 		android:dependency="lossy"/>
 
 </PreferenceScreen>

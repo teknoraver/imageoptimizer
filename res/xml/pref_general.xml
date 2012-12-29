@@ -3,7 +3,6 @@
 	<CheckBoxPreference
 		android:defaultValue="true"
 		android:key="timestamp"
-		android:title="preserve timestamp"
-		android:summary="preserve timestamp" />
+		android:title="@string/timestamp"/>
 
 </PreferenceScreen>

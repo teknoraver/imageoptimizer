@@ -133,7 +133,13 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		progress.setArguments(b);
 		progress.show(getSupportFragmentManager(), "compress");
 
-		Jpegoptim jo = new Jpegoptim(getFilesDir() + "/jpegoptim", checked, pm.getBoolean("lossy", false), Integer.parseInt(pm.getString("jpegquality", "75")));
+		Jpegoptim jo = new Jpegoptim(
+				getFilesDir() + "/jpegoptim",
+				checked,
+				pm.getBoolean("lossy", false),
+				Integer.parseInt(pm.getString("jpegquality", "75")),
+				pm.getBoolean("timestamp", true),
+				Integer.parseInt(pm.getString("threshold", "10")));
 		jo.addObserver(this);
 		new Thread(jo).start();
 	}
@@ -265,7 +271,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			try { Thread.sleep(200); } catch (InterruptedException e) { }
+/*			try { Thread.sleep(200); } catch (InterruptedException e) { }
 
 			Rect bounds = new Rect();
 			iv.getDrawingRect(bounds);
@@ -278,7 +284,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 			if(!Rect.intersects(listBounds, bounds)) {
 				System.out.println("skipping invisible " + path);
 				return null;
-			}
+			}*/
 
 			System.out.println("decoding " + path);
 			Bitmap bigbitmap = BitmapFactory.decodeFile(path);
