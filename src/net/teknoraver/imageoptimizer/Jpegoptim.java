@@ -42,7 +42,7 @@ public class Jpegoptim extends Observable implements Runnable {
 			String line;
 			while((line = stdout.readLine()) != null) {
 				String res[] = line.split(",");
-				notifyObservers(res[0].substring(res[0].lastIndexOf('/') + 1));
+				notifyObservers(res);
 			}
 		} catch(IOException ioe) {
 			ioe.printStackTrace();

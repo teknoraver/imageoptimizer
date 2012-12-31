@@ -146,13 +146,22 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 
 	@Override
 	public void update(Observable observable, Object data) {
-		if(data == null)
+		if(data == null) {
 			progress.dismiss();
-		else {
-			msg = (String)data;
+			progress = null;
+		} else {
+			String res[] = (String[])data;
+			msg = res[0].substring(res[0].lastIndexOf('/') + 1);
+			for(int i = 0; i < list.getCount(); i++) {
+				Image row = (Image)list.getItemAtPosition(i);
+				if(row.path.equals(res[0])) {
+					row.size = Long.parseLong(res[4]);
+					break;
+				}
+			}
 			System.out.println("update(): " + msg);
-			handler.post(compresser);
 		}
+		handler.post(compresser);
 	}
 
 	private void getFile(final String name) {
@@ -179,7 +188,10 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 	private Runnable compresser = new Runnable() {
 		@Override
 		public void run() {
-			progress.advance(msg);
+			if(progress != null)
+				progress.advance(msg);
+			else
+				((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 		}
 	};
 
