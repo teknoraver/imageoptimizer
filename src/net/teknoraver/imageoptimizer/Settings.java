@@ -106,18 +106,18 @@ public class Settings extends PreferenceActivity {
 	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			if (preference.getKey().equals("jpegquality")) {
+			if (preference.getKey().equals("jpegquality"))
 				preference.setSummary(getString(R.string.jpegquality_summary) + " " + value + "%");
-			} else if (preference.getKey().equals("lossy")) {
+			else if (preference.getKey().equals("lossy"))
 				if((Boolean)value)
 					preference.setSummary(getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(getString(R.string.pref_title_lossless));
-			} else if (preference.getKey().equals("threshold")) {
+			else if (preference.getKey().equals("threshold"))
 				preference.setSummary(getString(R.string.threshold_summary) + " " + value + "%");
-			} else if (preference.getKey().equals("pngquality")) {
+			else if (preference.getKey().equals("pngquality"))
 				preference.setSummary("Compression level " + value);
-			}
+
 			return true;
 		}
 	};
