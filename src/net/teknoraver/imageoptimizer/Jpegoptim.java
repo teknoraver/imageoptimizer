@@ -40,10 +40,8 @@ public class Jpegoptim extends Observable implements Runnable {
 			jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()));
 			String line;
-			while((line = stdout.readLine()) != null) {
-				String res[] = line.split(",");
-				notifyObservers(res);
-			}
+			while((line = stdout.readLine()) != null)
+				notifyObservers(line.split(","));
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
