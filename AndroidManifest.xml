@@ -7,7 +7,9 @@
     <uses-sdk
         android:minSdkVersion="7"
         android:targetSdkVersion="17" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -31,6 +33,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Browser" />
         </activity>
+		<activity android:name="com.google.ads.AdActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
     </application>
 
 </manifest>

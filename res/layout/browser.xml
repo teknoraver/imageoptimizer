@@ -1,8 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	tools:context=".Browser" >
+
+	<com.google.ads.AdView android:id="@+id/adView"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		ads:adUnitId="a150e0e2f10bbc5"
+		ads:adSize="BANNER"
+		ads:loadAdOnCreate="true"
+		android:layout_alignParentTop="true"/>
 
 	<Button
 	    android:id="@+id/optimize"
@@ -10,13 +19,14 @@
 	    android:layout_height="wrap_content"
 	    android:layout_alignParentBottom="true"
 	    android:layout_alignParentLeft="true"
-	    android:text="@string/optimize" />
+	    android:text="@string/optimize"/>
 
 	<ListView
 	    android:id="@+id/gallery"
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
-	    android:layout_above="@+id/optimize">
+	    android:layout_above="@id/optimize"
+	    android:layout_below="@id/adView">
 
 	</ListView>
 
