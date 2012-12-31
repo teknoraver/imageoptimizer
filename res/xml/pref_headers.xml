@@ -9,9 +9,9 @@
 	<header
 		android:fragment=".${activityClass}$JpegPreferenceFragment"
 		android:title="JPEG" />
-
+<!--
 	<header
 		android:fragment=".${activityClass}$PngPreferenceFragment"
 		android:title="PNG" />
-
+-->
 </preference-headers>

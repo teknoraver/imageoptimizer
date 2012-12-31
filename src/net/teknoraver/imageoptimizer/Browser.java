@@ -193,7 +193,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 				pd.dismiss();
 			}
 		};
-		scan(new File("/mnt/sdcard/DCIM"), all);
+		scan(new File("/mnt/sdcard/optim"), all);
 		handler.post(pdclose); 
 	}
 

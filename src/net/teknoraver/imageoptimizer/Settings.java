@@ -95,12 +95,12 @@ public class Settings extends PreferenceActivity {
 		bindPreferenceSummaryToValue(findPreference("jpegquality"));
 		bindPreferenceSummaryToValue(findPreference("threshold"));
 
-		// PNG
+/*		// PNG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_png);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_png);
-		bindPreferenceSummaryToValue(findPreference("pngquality"));
+		bindPreferenceSummaryToValue(findPreference("pngquality"));*/
 	}
 
 	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
@@ -201,7 +201,7 @@ public class Settings extends PreferenceActivity {
 		}
 	}
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+/*	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public class PngPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
@@ -210,5 +210,5 @@ public class Settings extends PreferenceActivity {
 
 			bindPreferenceSummaryToValue(findPreference("pngquality"));
 		}
-	}
+	}*/
 }
