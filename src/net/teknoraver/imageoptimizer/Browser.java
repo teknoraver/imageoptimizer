@@ -6,10 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -205,7 +207,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 				pd.dismiss();
 			}
 		};
-		scan(new File("/mnt/sdcard/optim"), all);
+		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"), all);
 		handler.post(pdclose); 
 	}
 
@@ -227,6 +229,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private static final float RATIO = (float)W / H;
 	private ImageView updatingImage;
 	private String updatingPath;
+	private HashMap<String, Bitmap> cache = new HashMap<String, Bitmap>();
 
 	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
@@ -298,16 +301,41 @@ class ImageAdapter extends ArrayAdapter<Image>
 				return null;
 			}*/
 
-			System.out.println("decoding " + path);
-			Bitmap bigbitmap = BitmapFactory.decodeFile(path);
-			float ratio = (float)bigbitmap.getWidth() / bigbitmap.getHeight();
+			scaledbitmap = cache.get(path);
+			if(scaledbitmap == null) {
+				System.out.println("decoding " + path);
 
-			if(ratio > RATIO)
-				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
-			if(ratio < RATIO)
-				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
-			else
-				scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
+				BitmapFactory.Options boundOpts = new BitmapFactory.Options();
+				boundOpts.inJustDecodeBounds = true;
+				Bitmap bigbitmap = BitmapFactory.decodeFile(path, boundOpts);
+
+				float ratio = (float)boundOpts.outWidth / boundOpts.outHeight;
+
+				int scale = 1;
+				// round scale value to smaller power of two
+				if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
+					scale = (int)Math.pow(2,
+							Math.floor(
+								Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+								/ Math.log(2)
+							)
+						);
+				}
+
+				BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
+				scaleOpts.inSampleSize = scale;
+
+				bigbitmap = BitmapFactory.decodeFile(path, scaleOpts);
+
+				if(ratio > RATIO)
+					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
+				if(ratio < RATIO)
+					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
+				else
+					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
+
+				cache.put(path, scaledbitmap);
+			}
 
 			return null;
 		}
