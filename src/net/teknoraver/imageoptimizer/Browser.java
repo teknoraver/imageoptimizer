@@ -222,6 +222,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 			c.setImageResource(R.drawable.off);
 	}
 
+}
 class ImageAdapter extends ArrayAdapter<Image>
 {
 	private static final int W = 320;
@@ -229,7 +230,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private static final float RATIO = (float)W / H;
 	private ImageView updatingImage;
 	private String updatingPath;
-	private HashMap<String, Bitmap> cache = new HashMap<String, Bitmap>();
+	private static final HashMap<String, Bitmap> cache = new HashMap<String, Bitmap>();
 
 	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
@@ -346,5 +347,4 @@ class ImageAdapter extends ArrayAdapter<Image>
 				iv.setImageBitmap(scaledbitmap);
 		}
 	}
-}
 }
