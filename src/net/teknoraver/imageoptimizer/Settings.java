@@ -103,18 +103,18 @@ public class Settings extends PreferenceActivity {
 		bindPreferenceSummaryToValue(findPreference("pngquality"));*/
 	}
 
-	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			if (preference.getKey().equals("jpegquality"))
-				preference.setSummary(getString(R.string.jpegquality_summary) + " " + value + "%");
+				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary) + " " + value + "%");
 			else if (preference.getKey().equals("lossy"))
 				if((Boolean)value)
-					preference.setSummary(getString(R.string.pref_title_lossy));
+					preference.setSummary(App.getContext().getString(R.string.pref_title_lossy));
 				else
-					preference.setSummary(getString(R.string.pref_title_lossless));
+					preference.setSummary(App.getContext().getString(R.string.pref_title_lossless));
 			else if (preference.getKey().equals("threshold"))
-				preference.setSummary(getString(R.string.threshold_summary) + " " + value + "%");
+				preference.setSummary(App.getContext().getString(R.string.threshold_summary) + " " + value + "%");
 			else if (preference.getKey().equals("pngquality"))
 				preference.setSummary("Compression level " + value);
 
@@ -122,7 +122,7 @@ public class Settings extends PreferenceActivity {
 		}
 	};
 
-	private void bindPreferenceSummaryToValue(Preference preference) {
+	private static void bindPreferenceSummaryToValue(Preference preference) {
 		// Set the listener to watch for value changes.
 		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
@@ -178,7 +178,7 @@ public class Settings extends PreferenceActivity {
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public class GeneralPreferenceFragment extends PreferenceFragment {
+	static public class GeneralPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
@@ -189,7 +189,7 @@ public class Settings extends PreferenceActivity {
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public class JpegPreferenceFragment extends PreferenceFragment {
+	static public class JpegPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);

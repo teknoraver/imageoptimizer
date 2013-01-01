@@ -3,15 +3,15 @@
     <!-- These settings headers are only used on tablets. -->
 
 	<header
-		android:fragment=".${activityClass}$GeneralPreferenceFragment"
+		android:fragment="net.teknoraver.imageoptimizer.Settings$GeneralPreferenceFragment"
 		android:title="@string/pref_header_general" />
 
 	<header
-		android:fragment=".${activityClass}$JpegPreferenceFragment"
+		android:fragment="net.teknoraver.imageoptimizer.Settings$JpegPreferenceFragment"
 		android:title="JPEG" />
 <!--
 	<header
-		android:fragment=".${activityClass}$PngPreferenceFragment"
+		android:fragment="net.teknoraver.imageoptimizer.Settings$PngPreferenceFragment"
 		android:title="PNG" />
 -->
 </preference-headers>
