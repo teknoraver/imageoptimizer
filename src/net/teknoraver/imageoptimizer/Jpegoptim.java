@@ -3,10 +3,25 @@ package net.teknoraver.imageoptimizer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Observable;
 
-public class Jpegoptim extends Observable implements Runnable {
+/*
+ * Jpegoptim output sample is CSV format
+ * foo.jpg,2048x1536,24bit,1000,200,80.00,optimized
+ * bar.jpg,2048x1536,24bit,200,200,0.00,optimized
+ * 
+ * 0	filename
+ * 1	resolution
+ * 2	color depth
+ * 3	original size
+ * 4	optimized size
+ * 5	compression ratio
+ * 6	optimized/skipped/error
+ */
+
+public class Jpegoptim extends Observable implements Serializable, Runnable {
 	private boolean compress;
 	private int quality;
 	private ArrayList<String> files;
@@ -58,5 +73,9 @@ public class Jpegoptim extends Observable implements Runnable {
 	void abort() {
 		if(jpegoptim != null)
 			jpegoptim.destroy();
+	}
+
+	int count() {
+		return files.size();
 	}
 }

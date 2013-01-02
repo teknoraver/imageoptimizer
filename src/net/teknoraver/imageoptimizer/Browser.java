@@ -49,9 +49,8 @@ class Image {
 	}
 }
 
-public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Observer, Runnable, OnItemClickListener {
+public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Runnable, OnItemClickListener {
 	private ListView list;
-	private ProgressDialogFragment progress;
 	private final Handler handler = new Handler();
 	private String msg;
 	private ProgressDialog pd;
@@ -128,41 +127,18 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		}
 		if(checked.isEmpty())
 			return;
-		progress = new ProgressDialogFragment();
-		Bundle b = new Bundle();
-		b.putInt(ProgressDialogFragment.SIZE, checked.size());
-		progress.setArguments(b);
-		progress.show(getSupportFragmentManager(), "compress");
 
 		Jpegoptim jo = new Jpegoptim(
-				getFilesDir() + "/jpegoptim",
-				checked,
-				pm.getBoolean("lossy", false),
-				Integer.parseInt(pm.getString("jpegquality", "75")),
-				pm.getBoolean("timestamp", true),
-				Integer.parseInt(pm.getString("threshold", "10")));
-		jo.addObserver(this);
-		new Thread(jo).start();
-	}
+			getFilesDir() + "/jpegoptim",
+			checked,
+			pm.getBoolean("lossy", false),
+			Integer.parseInt(pm.getString("jpegquality", "75")),
+			pm.getBoolean("timestamp", true),
+			Integer.parseInt(pm.getString("threshold", "10")));
 
-	@Override
-	public void update(Observable observable, Object data) {
-		if(data == null) {
-			progress.dismiss();
-			progress = null;
-		} else {
-			String res[] = (String[])data;
-			msg = res[0].substring(res[0].lastIndexOf('/') + 1);
-			for(int i = 0; i < list.getCount(); i++) {
-				Image row = (Image)list.getItemAtPosition(i);
-				if(row.path.equals(res[0])) {
-					row.size = Long.parseLong(res[4]);
-					break;
-				}
-			}
-			System.out.println("update(): " + msg);
-		}
-		handler.post(compresser);
+		Intent comp = new Intent(this, Compress.class);
+		comp.putExtra(Compress.OPTIMIZER, jo);
+		startActivity(comp);
 	}
 
 	private void getFile(final String name) {
@@ -186,16 +162,6 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
                         }
         }
 
-	private Runnable compresser = new Runnable() {
-		@Override
-		public void run() {
-			if(progress != null)
-				progress.advance(msg);
-			else
-				((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
-		}
-	};
-
 	@Override
 	public void run() {
 		final ArrayList<Image> all = new ArrayList<Image>();
@@ -206,7 +172,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 				pd.dismiss();
 			}
 		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"), all);
+		scan(new File(Environment.getExternalStorageDirectory() + "/optim"), all);
 		handler.post(pdclose); 
 	}
 
@@ -254,14 +220,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
 		long len = getItem(position).size;
-		String length;
-		if(len < 1 << 10)
-			length = len + " bytes";
-		else if(len < 1 << 20)
-			length = ((int)(len / 10.24)) / 100.0 + " Kb";
-		else
-			length = ((int)(len / 10485.76)) / 100.0 + " Mb";
-		size.setText(length);
+		size.setText(Compress.sizeString(len));
 
 		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
 		Image i = (Image)getItem(position);

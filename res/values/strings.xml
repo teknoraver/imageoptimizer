@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Image Optimizer</string>
-	<string name="menu_settings">Settings</string>
-	<string name="optimize">Optimize</string>
 
-	<string name="compress">Compressing</string>
-	<string name="sall">Select all</string>
-	<string name="snone">Select none</string>
+    <string name="app_name">Image Optimizer</string>
+    <string name="menu_settings">Settings</string>
+    <string name="optimize">Optimize</string>
+    <string name="compress">Compressing</string>
+    <string name="sall">Select all</string>
+    <string name="snone">Select none</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_compress">Image Optimization</string>
+    <string name="spacesaved">Space saved</string>
+    <string name="optimizing">Optimizing</string>
+    <string name="origsize">Original size</string>
+    <string name="newsize">Optimized size</string>
+    <string name="saved">Saved space</string>
+
 </resources>
