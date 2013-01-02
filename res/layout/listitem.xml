@@ -32,12 +32,12 @@
 		android:textAppearance="?android:attr/textAppearanceSmall" />
 
 	<ImageView
-	    android:id="@+id/compress"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentTop="true"
-	    android:layout_alignParentLeft="true"
-	    android:src="@drawable/off"
-	    android:contentDescription="@string/compress"/>
+		android:id="@+id/compress"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_alignParentLeft="true"
+		android:src="@android:drawable/checkbox_on_background"
+		android:contentDescription="@string/compress"/>
 
 </RelativeLayout>

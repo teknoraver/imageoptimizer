@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Observable;
-import java.util.Observer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -52,7 +51,6 @@ class Image {
 public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Runnable, OnItemClickListener {
 	private ListView list;
 	private final Handler handler = new Handler();
-	private String msg;
 	private ProgressDialog pd;
 
 	@Override
@@ -68,6 +66,14 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		getFile("jpegoptim");
 
 		new Thread(this).start();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		if(list.getAdapter() != null)
+			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 	}
 
 	@Override
@@ -109,7 +115,15 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 				Image row = (Image)list.getItemAtPosition(i);
 				row.compress = item.getItemId() == R.id.menu_all;
 			}
-			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
+			for(int i = 0; i < list.getChildCount(); i++) {
+				View row = list.getChildAt(i);
+				ImageView c = (ImageView)row.findViewById(R.id.compress);
+				if(item.getItemId() == R.id.menu_all)
+					c.setImageResource(android.R.drawable.checkbox_on_background);
+				else
+					c.setImageResource(android.R.drawable.checkbox_off_background);
+			}
+//			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
 
 		}
@@ -182,9 +196,9 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		Image i = (Image)parent.getItemAtPosition(position);
 		i.compress = !i.compress;
 		if(i.compress)
-			c.setImageResource(R.drawable.on);
+			c.setImageResource(android.R.drawable.checkbox_on_background);
 		else
-			c.setImageResource(R.drawable.off);
+			c.setImageResource(android.R.drawable.checkbox_off_background);
 	}
 
 }
@@ -225,9 +239,9 @@ class ImageAdapter extends ArrayAdapter<Image>
 		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
 		Image i = (Image)getItem(position);
 		if(i.compress)
-			c.setImageResource(R.drawable.on);
+			c.setImageResource(android.R.drawable.checkbox_on_background);
 		else
-			c.setImageResource(R.drawable.off);
+			c.setImageResource(android.R.drawable.checkbox_off_background);
 
 		return convertView;
 	}

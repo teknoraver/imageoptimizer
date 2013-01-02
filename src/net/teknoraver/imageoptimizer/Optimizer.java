@@ -13,7 +13,7 @@ public class Optimizer extends Activity implements Observer, Runnable {
 
 	public static final String OPTIMIZER = "optim";
 	private Jpegoptim jo;
-	private String msg;
+	private String res[];
 	private Handler handler = new Handler();
 	private TextView currentfile;
 	private TextView origs;
@@ -43,24 +43,26 @@ public class Optimizer extends Activity implements Observer, Runnable {
 
 	@Override
 	public void update(Observable observable, Object data) {
-		if(data == null)
-			return;
-
-		String res[] = (String[])data;
-		msg = res[0].substring(res[0].lastIndexOf('/') + 1);
-		origsize += Integer.parseInt(res[3]);
-		if(res[6].equals("optimized"))
-			newsize += Integer.parseInt(res[4]);
-		else
-			newsize += Integer.parseInt(res[3]);
+		if(data != null) {
+			res = (String[])data;
+			origsize += Integer.parseInt(res[3]);
+			if(res[6].equals("optimized"))
+				newsize += Integer.parseInt(res[4]);
+			else
+				newsize += Integer.parseInt(res[3]);
+		} else
+			res = null;
 		handler.post(this);
 	}
 
 	@Override
 	public void run() {
-System.out.println("origsize: " + origsize);
-System.out.println("newsize: " + newsize);
-		currentfile.setText(" " + msg);
+		if(res != null)
+			currentfile.setText(" " + res[0].substring(res[0].lastIndexOf('/') + 1));
+		else {
+			((TextView)findViewById(R.id.currlabel)).setText(R.string.done);
+			currentfile.setText(null);
+		}
 		progress.setProgress(progress.getProgress() + 1);
 		origs.setText(" " + sizeString(origsize));
 		news.setText(" " + sizeString(newsize));

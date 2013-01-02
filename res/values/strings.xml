@@ -11,6 +11,7 @@
     <string name="title_activity_compress">Image Optimization</string>
     <string name="spacesaved">Space saved</string>
     <string name="optimizing">Optimizing</string>
+    <string name="done">Done!</string>
     <string name="origsize">Original size</string>
     <string name="newsize">Optimized size</string>
     <string name="saved">Saved space</string>
