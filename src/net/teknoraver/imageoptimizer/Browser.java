@@ -136,8 +136,8 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 			pm.getBoolean("timestamp", true),
 			Integer.parseInt(pm.getString("threshold", "10")));
 
-		Intent comp = new Intent(this, Compress.class);
-		comp.putExtra(Compress.OPTIMIZER, jo);
+		Intent comp = new Intent(this, Optimizer.class);
+		comp.putExtra(Optimizer.OPTIMIZER, jo);
 		startActivity(comp);
 	}
 
@@ -220,7 +220,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
 		long len = getItem(position).size;
-		size.setText(Compress.sizeString(len));
+		size.setText(Optimizer.sizeString(len));
 
 		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
 		Image i = (Image)getItem(position);

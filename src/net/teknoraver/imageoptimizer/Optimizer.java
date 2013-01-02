@@ -9,7 +9,7 @@ import android.app.Activity;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class Compress extends Activity implements Observer, Runnable {
+public class Optimizer extends Activity implements Observer, Runnable {
 
 	public static final String OPTIMIZER = "optim";
 	private Jpegoptim jo;
@@ -25,7 +25,7 @@ public class Compress extends Activity implements Observer, Runnable {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.compress);
+		setContentView(R.layout.optimizer);
 
 		jo = (Jpegoptim)getIntent().getSerializableExtra(OPTIMIZER);
 
@@ -49,13 +49,18 @@ public class Compress extends Activity implements Observer, Runnable {
 		String res[] = (String[])data;
 		msg = res[0].substring(res[0].lastIndexOf('/') + 1);
 		origsize += Integer.parseInt(res[3]);
-		newsize += Integer.parseInt(res[4]);
+		if(res[6].equals("optimized"))
+			newsize += Integer.parseInt(res[4]);
+		else
+			newsize += Integer.parseInt(res[3]);
 		handler.post(this);
 	}
 
 	@Override
 	public void run() {
-		currentfile.setText(msg);
+System.out.println("origsize: " + origsize);
+System.out.println("newsize: " + newsize);
+		currentfile.setText(" " + msg);
 		progress.setProgress(progress.getProgress() + 1);
 		origs.setText(" " + sizeString(origsize));
 		news.setText(" " + sizeString(newsize));

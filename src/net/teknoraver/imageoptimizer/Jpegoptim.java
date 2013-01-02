@@ -29,6 +29,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	private boolean preserve;
 	private int threshold;
 	private Process jpegoptim;
+	private boolean run;
 
 	public Jpegoptim(String b, ArrayList<String> checked, boolean l, int q, boolean p, int t) {
 		compress = l;
@@ -52,11 +53,14 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 				args.add("-p");
 			args.addAll(files);
 			System.out.println("starting jpegoptim");
+			run = true;
 			jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()));
 			String line;
-			while((line = stdout.readLine()) != null)
+			while(run && (line = stdout.readLine()) != null)
 				notifyObservers(line.split(","));
+			stdout.close();
+			jpegoptim.destroy();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -71,8 +75,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	}
 
 	void abort() {
-		if(jpegoptim != null)
-			jpegoptim.destroy();
+		run = false;
 	}
 
 	int count() {
