@@ -48,7 +48,6 @@ public class Compress extends Activity implements Observer, Runnable {
 
 		String res[] = (String[])data;
 		msg = res[0].substring(res[0].lastIndexOf('/') + 1);
-		System.out.println("update(): " + msg);
 		origsize += Integer.parseInt(res[3]);
 		newsize += Integer.parseInt(res[4]);
 		handler.post(this);

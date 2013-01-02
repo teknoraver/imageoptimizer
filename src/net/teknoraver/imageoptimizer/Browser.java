@@ -172,7 +172,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 				pd.dismiss();
 			}
 		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/optim"), all);
+		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"), all);
 		handler.post(pdclose); 
 	}
 
