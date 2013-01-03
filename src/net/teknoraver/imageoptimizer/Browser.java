@@ -68,9 +68,9 @@ class Sorter implements Comparator<Image> {
 		case BYNAME:
 			return lhs.path.compareToIgnoreCase(rhs.path);
 		case BYSIZE:
-			return (int)(lhs.size - rhs.size);
+			return (int)Math.signum(lhs.size - rhs.size);
 		case BYDATE:
-			return (int)(lhs.date - rhs.date);
+			return (int)Math.signum(lhs.date - rhs.date);
 		}
 		return 0;
 	}
@@ -342,32 +342,21 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 				BitmapFactory.Options boundOpts = new BitmapFactory.Options();
 				boundOpts.inJustDecodeBounds = true;
-				Bitmap bigbitmap = BitmapFactory.decodeFile(path, boundOpts);
-
-				float ratio = (float)boundOpts.outWidth / boundOpts.outHeight;
-
-				int scale = 1;
-				// round scale value to smaller power of two
-				if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
-					scale = (int)Math.pow(2,
-							Math.floor(
-								Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
-								/ Math.log(2)
-							)
-						);
-				}
+				scaledbitmap = BitmapFactory.decodeFile(path, boundOpts);
 
 				BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
-				scaleOpts.inSampleSize = scale;
+				scaleOpts.inSampleSize = 1;
+				// round scale value to smaller power of two
+				if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
+					scaleOpts.inSampleSize = (int)Math.pow(2, Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+						/*Math.floor(
+							Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+							/ Math.log(2)
+						)*/
+					);
+				}
 
-				bigbitmap = BitmapFactory.decodeFile(path, scaleOpts);
-
-				if(ratio > RATIO)
-					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, (int)(W / ratio), true);
-				if(ratio < RATIO)
-					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, (int)(H * ratio), H, true);
-				else
-					scaledbitmap = Bitmap.createScaledBitmap(bigbitmap, W, H, true);
+				scaledbitmap = BitmapFactory.decodeFile(path, scaleOpts);
 
 				cache.put(path, scaledbitmap);
 			}
