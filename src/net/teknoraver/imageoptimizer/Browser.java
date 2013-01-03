@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -38,6 +37,7 @@ class Image {
 	boolean compress;
 	long size;
 	long date;
+	Bitmap thumb;
 
 	Image(String f, long s, long d) {
 		path = f;
@@ -268,10 +268,6 @@ class ImageAdapter extends ArrayAdapter<Image>
 {
 	private static final int W = 320;
 	private static final int H = 240;
-	private static final float RATIO = (float)W / H;
-	private ImageView updatingImage;
-	private String updatingPath;
-	private static final HashMap<String, Bitmap> cache = new HashMap<String, Bitmap>();
 
 	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
@@ -285,22 +281,26 @@ class ImageAdapter extends ArrayAdapter<Image>
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);
 //		}
 
-		updatingImage = (ImageView)convertView.findViewById(R.id.grid_item_image);
-		updatingPath = getItem(position).path;
+		Image image = getItem(position);
+		ImageView updatingImage = (ImageView)convertView.findViewById(R.id.grid_item_image);
 
-		Thumber thumber = new Thumber(updatingImage, updatingPath);
-		thumber.execute();
+		// show image directly if already in cache
+		if(image.thumb != null)
+			updatingImage.setImageBitmap(image.thumb);
+		else {
+			Thumber thumber = new Thumber(updatingImage, image);
+			thumber.execute();
+		}
 
 		TextView name = (TextView)convertView.findViewById(R.id.name);
-		name.setText(getItem(position).getName());
+		name.setText(image.getName());
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
-		long len = getItem(position).size;
+		long len = image.size;
 		size.setText(Optimizer.sizeString(len));
 
 		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
-		Image i = (Image)getItem(position);
-		if(i.compress)
+		if(image.compress)
 			c.setImageResource(android.R.drawable.checkbox_on_background);
 		else
 			c.setImageResource(android.R.drawable.checkbox_off_background);
@@ -311,12 +311,12 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private class Thumber extends AsyncTask<Void, Void, Void>
 	{
 		private ImageView iv;
-		private String path;
+		private Image image;
 		private Bitmap scaledbitmap;
 
-		private Thumber(ImageView i, String p) {
+		private Thumber(ImageView i, Image im) {
 			iv = i;
-			path = p;
+			image = im;
 		}
 
 		@Override
@@ -336,30 +336,27 @@ class ImageAdapter extends ArrayAdapter<Image>
 				return null;
 			}*/
 
-			scaledbitmap = cache.get(path);
-			if(scaledbitmap == null) {
-				System.out.println("decoding " + path);
+			System.out.println("decoding " + image.path);
 
-				BitmapFactory.Options boundOpts = new BitmapFactory.Options();
-				boundOpts.inJustDecodeBounds = true;
-				scaledbitmap = BitmapFactory.decodeFile(path, boundOpts);
+			BitmapFactory.Options boundOpts = new BitmapFactory.Options();
+			boundOpts.inJustDecodeBounds = true;
+			scaledbitmap = BitmapFactory.decodeFile(image.path, boundOpts);
 
-				BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
-				scaleOpts.inSampleSize = 1;
-				// round scale value to smaller power of two
-				if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
-					scaleOpts.inSampleSize = (int)Math.pow(2, Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
-						/*Math.floor(
-							Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
-							/ Math.log(2)
-						)*/
-					);
-				}
-
-				scaledbitmap = BitmapFactory.decodeFile(path, scaleOpts);
-
-				cache.put(path, scaledbitmap);
+			BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
+			scaleOpts.inSampleSize = 1;
+			// round scale value to smaller power of two
+			if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
+				scaleOpts.inSampleSize = (int)Math.pow(2, Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+					/*Math.floor(
+						Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+						/ Math.log(2)
+					)*/
+				);
 			}
+
+			scaledbitmap = BitmapFactory.decodeFile(image.path, scaleOpts);
+
+			image.thumb = scaledbitmap;
 
 			return null;
 		}
