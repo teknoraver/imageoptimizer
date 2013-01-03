@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
