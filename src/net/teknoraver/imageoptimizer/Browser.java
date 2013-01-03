@@ -6,14 +6,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.app.Activity;
+import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,11 +27,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -37,10 +37,12 @@ class Image {
 	String path;
 	boolean compress;
 	long size;
+	long date;
 
-	Image(String f, long s) {
+	Image(String f, long s, long d) {
 		path = f;
 		size = s;
+		date = d;
 	}
 
 	String getName() {
@@ -48,10 +50,57 @@ class Image {
 	}
 }
 
-public class Browser extends FragmentActivity implements FileFilter, OnClickListener, Runnable, OnItemClickListener {
-	private ListView list;
+class Sorter implements Comparator<Image> {
+	private static final int BYNAME = 0;
+	private static final int BYSIZE = 1;
+	private static final int BYDATE = 2;
+	private int mode;
+	private boolean asc;
+
+	@Override
+	public int compare(Image lhs, Image rhs) {
+		if(!asc) {
+			Image tmp = lhs;
+			lhs = rhs;
+			rhs = tmp;
+		}
+		switch(mode) {
+		case BYNAME:
+			return lhs.path.compareToIgnoreCase(rhs.path);
+		case BYSIZE:
+			return (int)(lhs.size - rhs.size);
+		case BYDATE:
+			return (int)(lhs.date - rhs.date);
+		}
+		return 0;
+	}
+
+	// invert operands if the same order is applied for the second time
+	Sorter byName() {
+		asc = mode == BYNAME ? !asc : true;
+		mode = BYNAME;
+		return this;
+	}
+
+	Sorter bySize() {
+		asc = mode == BYSIZE ? !asc : true;
+		mode = BYSIZE;
+		return this;
+	}
+
+	Sorter byDate() {
+		asc = mode == BYDATE ? !asc : true;
+		mode = BYDATE;
+		return this;
+	}
+}
+
+public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable {
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
+	private ListView list;
+	private ArrayList<Image> all = new ArrayList<Image>();
+	private Sorter sorter = new Sorter();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +108,7 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		setContentView(R.layout.browser);
 
 		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
-		list = (ListView)findViewById(R.id.gallery);
-		list.setOnItemClickListener(this);
+		list = getListView();
 
 		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
 		getFile("jpegoptim");
@@ -72,8 +120,12 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 	protected void onResume() {
 		super.onResume();
 
-		if(list.getAdapter() != null)
-			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
+		refresh();
+	}
+
+	private void refresh() {
+		if(getListAdapter() != null)
+			((ImageAdapter)getListAdapter()).notifyDataSetChanged();
 	}
 
 	@Override
@@ -82,14 +134,14 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 		return true;
 	}
 
-	private void scan(File file, ArrayList<Image> all) {
+	private void scan(File file) {
 		File children[] = file.listFiles(this);
 		if (children != null)
 			for (File child : children)
 				if(child.isDirectory())
-					scan(child, all);
+					scan(child);
 				else
-					all.add(new Image(child.getAbsolutePath(), child.length()));
+					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified()));
 	}
 
 	@Override
@@ -125,7 +177,18 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 			}
 //			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
-
+		case R.id.sortby_size:
+			Collections.sort(all, sorter.bySize());
+			refresh();
+			return true;
+		case R.id.sortby_name:
+			Collections.sort(all, sorter.byName());
+			refresh();
+			return true;
+		case R.id.sortby_date:
+			Collections.sort(all, sorter.byDate());
+			refresh();
+			return true;
 		}
 		return super.onContextItemSelected(item);
 	}
@@ -178,22 +241,21 @@ public class Browser extends FragmentActivity implements FileFilter, OnClickList
 
 	@Override
 	public void run() {
-		final ArrayList<Image> all = new ArrayList<Image>();
 		Runnable pdclose = new Runnable() {
 			@Override
 			public void run() {
-				list.setAdapter(new ImageAdapter(Browser.this, all));
+				setListAdapter(new ImageAdapter(Browser.this, all));
 				pd.dismiss();
 			}
 		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"), all);
+		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
 		handler.post(pdclose); 
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		ImageView c = (ImageView)view.findViewById(R.id.compress);
-		Image i = (Image)parent.getItemAtPosition(position);
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		ImageView c = (ImageView)v.findViewById(R.id.compress);
+		Image i = (Image)list.getItemAtPosition(position);
 		i.compress = !i.compress;
 		if(i.compress)
 			c.setImageResource(android.R.drawable.checkbox_on_background);
