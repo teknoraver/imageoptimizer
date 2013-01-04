@@ -8,7 +8,6 @@
 	<string name="pref_title_lossless">Optimize only images</string>
 	<string name="title_quality">Quality level</string>
 	<string name="jpegquality_summary">Set JPEG compression to</string>
-	<string name="desc_quality">JPEG compression</string>
 	<string name="threshold">Threshold</string>
 	<string name="threshold_summary">Skip file if compression saves less than</string>
 	<string name="image">image</string>

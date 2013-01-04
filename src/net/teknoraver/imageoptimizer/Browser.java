@@ -91,12 +91,16 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.browser);
 
-		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
 		list = getListView();
 
 		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
 		getFile("jpegoptim");
 
+		startScan();
+	}
+
+	private void startScan() {
+		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
 		new Thread(this).start();
 	}
 
@@ -167,6 +171,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			Collections.sort(all, sorter.by(item.getItemId()));
 			refresh();
 			return true;
+		case R.id.menu_refresh:
+			startScan();
+			return true;
 		}
 		return super.onContextItemSelected(item);
 	}
@@ -219,6 +226,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	@Override
 	public void run() {
+		all.clear();
 		Runnable pdclose = new Runnable() {
 			@Override
 			public void run() {

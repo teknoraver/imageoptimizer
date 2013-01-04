@@ -7,9 +7,8 @@
     <string name="compress">Compressing</string>
     <string name="sall">Select all</string>
     <string name="snone">Select none</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="refresh">Refresh</string>
     <string name="title_activity_compress">Image Optimization</string>
-    <string name="spacesaved">Space saved</string>
     <string name="optimizing">Optimizing</string>
     <string name="done">Done!</string>
     <string name="origsize">Original size</string>

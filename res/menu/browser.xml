@@ -2,7 +2,8 @@
 
 	<item android:id="@+id/menu_all" android:title="@string/sall"/>
 	<item android:id="@+id/menu_none" android:title="@string/snone"/>
-	<item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:showAsAction="always|withText" android:icon="@android:drawable/ic_menu_preferences"/>
+	<item android:id="@+id/menu_settings" android:title="@string/menu_settings" android:showAsAction="always" android:icon="@android:drawable/ic_menu_preferences"/>
+	<item android:id="@+id/menu_refresh" android:title="@string/refresh" android:showAsAction="always" android:icon="@android:drawable/ic_popup_sync"/>
 	<item android:id="@+id/menu_sort" android:title="Sort by" android:showAsAction="ifRoom">
 		<menu>
 			<item android:id="@+id/sortby_date" android:title="date" android:icon="@android:drawable/ic_menu_month"/>
