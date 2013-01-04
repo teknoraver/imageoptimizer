@@ -50,9 +50,6 @@ class Image {
 }
 
 class Sorter implements Comparator<Image> {
-	private static final int BYNAME = 0;
-	private static final int BYSIZE = 1;
-	private static final int BYDATE = 2;
 	private int mode;
 	private boolean asc;
 
@@ -64,32 +61,20 @@ class Sorter implements Comparator<Image> {
 			rhs = tmp;
 		}
 		switch(mode) {
-		case BYNAME:
+		case R.id.sortby_name:
 			return lhs.path.compareToIgnoreCase(rhs.path);
-		case BYSIZE:
+		case R.id.sortby_size:
 			return (int)Math.signum(lhs.size - rhs.size);
-		case BYDATE:
+		case R.id.sortby_date:
 			return (int)Math.signum(lhs.date - rhs.date);
 		}
 		return 0;
 	}
 
-	// invert operands if the same order is applied for the second time
-	Sorter byName() {
-		asc = mode == BYNAME ? !asc : true;
-		mode = BYNAME;
-		return this;
-	}
-
-	Sorter bySize() {
-		asc = mode == BYSIZE ? !asc : true;
-		mode = BYSIZE;
-		return this;
-	}
-
-	Sorter byDate() {
-		asc = mode == BYDATE ? !asc : true;
-		mode = BYDATE;
+	Sorter by(int newmode) {
+		// invert operands if the same order is applied for the second time
+		asc = mode == newmode ? !asc : true;
+		mode = newmode;
 		return this;
 	}
 }
@@ -177,15 +162,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 //			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
 		case R.id.sortby_size:
-			Collections.sort(all, sorter.bySize());
-			refresh();
-			return true;
 		case R.id.sortby_name:
-			Collections.sort(all, sorter.byName());
-			refresh();
-			return true;
 		case R.id.sortby_date:
-			Collections.sort(all, sorter.byDate());
+			Collections.sort(all, sorter.by(item.getItemId()));
 			refresh();
 			return true;
 		}
