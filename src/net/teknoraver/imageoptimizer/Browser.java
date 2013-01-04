@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -157,11 +158,16 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			}
 			for(int i = 0; i < list.getChildCount(); i++) {
 				View row = list.getChildAt(i);
-				ImageView c = (ImageView)row.findViewById(R.id.compress);
+				ImageView b = (ImageView)row.findViewById(R.id.grid_item_image);
+				int left = b.getPaddingLeft();
+				int top = b.getPaddingTop();
+				int right = b.getPaddingRight();
+				int bottom = b.getPaddingBottom();
 				if(item.getItemId() == R.id.menu_all)
-					c.setImageResource(android.R.drawable.checkbox_on_background);
+					b.setBackgroundResource(R.drawable.borderh);
 				else
-					c.setImageResource(android.R.drawable.checkbox_off_background);
+					b.setBackgroundResource(R.drawable.border);
+				b.setPadding(left, top, right, bottom);
 			}
 //			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
@@ -240,13 +246,19 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		ImageView c = (ImageView)v.findViewById(R.id.compress);
 		Image i = (Image)list.getItemAtPosition(position);
 		i.compress = !i.compress;
+
+		ImageView b = (ImageView)v.findViewById(R.id.grid_item_image);
+		int left = b.getPaddingLeft();
+		int top = b.getPaddingTop();
+		int right = b.getPaddingRight();
+		int bottom = b.getPaddingBottom();
 		if(i.compress)
-			c.setImageResource(android.R.drawable.checkbox_on_background);
+			b.setBackgroundResource(R.drawable.borderh);
 		else
-			c.setImageResource(android.R.drawable.checkbox_off_background);
+			b.setBackgroundResource(R.drawable.border);
+		b.setPadding(left, top, right, bottom);
 	}
 
 }
@@ -285,11 +297,16 @@ class ImageAdapter extends ArrayAdapter<Image>
 		long len = image.size;
 		size.setText(Optimizer.sizeString(len));
 
-		ImageView c = (ImageView)convertView.findViewById(R.id.compress);
+		ImageView b = (ImageView)convertView.findViewById(R.id.grid_item_image);
+		int left = b.getPaddingLeft();
+		int top = b.getPaddingTop();
+		int right = b.getPaddingRight();
+		int bottom = b.getPaddingBottom();
 		if(image.compress)
-			c.setImageResource(android.R.drawable.checkbox_on_background);
+			b.setBackgroundResource(R.drawable.borderh);
 		else
-			c.setImageResource(android.R.drawable.checkbox_off_background);
+			b.setBackgroundResource(R.drawable.border);
+		b.setPadding(left, top, right, bottom);
 
 		return convertView;
 	}
