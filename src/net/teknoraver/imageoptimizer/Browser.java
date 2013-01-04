@@ -208,9 +208,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			getFilesDir() + "/jpegoptim",
 			checked,
 			pm.getBoolean("lossy", false),
-			Integer.parseInt(pm.getString("jpegquality", "75")),
+			pm.getInt("jpegquality", 75),
 			pm.getBoolean("timestamp", true),
-			Integer.parseInt(pm.getString("threshold", "10")));
+			pm.getInt("threshold", 10));
 
 		Intent comp = new Intent(this, Optimizer.class);
 		comp.putExtra(Optimizer.OPTIMIZER, jo);
@@ -345,11 +345,11 @@ class ImageAdapter extends ArrayAdapter<Image>
 			scaleOpts.inSampleSize = 1;
 			// round scale value to smaller power of two
 			if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
-				scaleOpts.inSampleSize = (int)Math.pow(2, Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
-					/*Math.floor(
+				scaleOpts.inSampleSize = (int)Math.pow(2, /*Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))*/
+					Math.ceil(
 						Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
 						/ Math.log(2)
-					)*/
+					)
 				);
 			}
 

@@ -1,12 +1,16 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:robobunny="http://robobunny.com">
 
 	<CheckBoxPreference
 		android:defaultValue="true"
 		android:key="dopng"
 		android:title="@string/dopng" />
 
-	<EditTextPreference
+	<net.teknoraver.seekbar.SeekBarPreference
 		android:defaultValue="7"
+		android:max="7"
+		robobunny:min="1"
 		android:key="pngquality"
 		android:title="@string/pngquality"
 		android:dependency="dopng"/>

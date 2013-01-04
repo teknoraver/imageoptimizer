@@ -1,4 +1,6 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:robobunny="http://robobunny.com">
 
 	<CheckBoxPreference
 		android:defaultValue="true"
@@ -12,15 +14,20 @@
 		android:summary="@string/pref_description_lossy"
 		android:dependency="dojpeg" />
 
-	<EditTextPreference
-		android:defaultValue="75"
+	<net.teknoraver.seekbar.SeekBarPreference
 		android:key="jpegquality"
 		android:title="@string/title_quality"
-		android:summary="@string/desc_quality"
+		android:defaultValue="75"
+		android:max="100"
+		robobunny:min="1"
+		robobunny:unitsLeft=""
+		robobunny:unitsRight="%"
 		android:dependency="lossy"/>
 
-	<EditTextPreference
+	<net.teknoraver.seekbar.SeekBarPreference
 		android:defaultValue="10"
+		android:max="100"
+		robobunny:min="1"
 		android:key="threshold"
 		android:title="@string/threshold"
 		android:dependency="lossy"/>

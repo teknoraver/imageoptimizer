@@ -131,15 +131,15 @@ public class Settings extends PreferenceActivity {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
 
 		if(preference.getKey().equals("jpegquality"))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "75"));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 75));
 		else if(preference.getKey().equals("lossy"))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
 		else if(preference.getKey().equals("threshold"))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "10"));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 10));
 		else if(preference.getKey().equals("dopng"))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), true));
 		else if(preference.getKey().equals("pngquality"))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(preference.getKey(), "7"));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 7));
 	}
 
 	/** {@inheritDoc} */
