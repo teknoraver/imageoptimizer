@@ -25,6 +25,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.Display;
@@ -59,8 +60,19 @@ class Image {
 }
 
 class Sorter implements Comparator<Image> {
+	private static final int NAME = 0;
+	private static final int SIZE = 1;
+	private static final int DATE = 2;
+	private static final String ASC = "ascendent";
+	private static final String MODE = "mode";
 	private int mode;
 	private boolean asc;
+	private SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
+
+	Sorter() {
+		asc = pm.getBoolean(ASC, false);
+		mode = pm.getInt(MODE, DATE);
+	}
 
 	@Override
 	public int compare(Image lhs, Image rhs) {
@@ -70,21 +82,38 @@ class Sorter implements Comparator<Image> {
 			rhs = tmp;
 		}
 		switch(mode) {
-		case R.id.sortby_name:
+		case NAME:
 			return lhs.path.compareToIgnoreCase(rhs.path);
-		case R.id.sortby_size:
+		case SIZE:
 			return (int)Math.signum(lhs.size - rhs.size);
-		case R.id.sortby_date:
+		case DATE:
 			return (int)Math.signum(lhs.date - rhs.date);
 		}
 		return 0;
 	}
 
 	Sorter by(int newmode) {
+		newmode = id2mode(newmode);
 		// invert operands if the same order is applied for the second time
 		asc = mode == newmode ? !asc : true;
 		mode = newmode;
+		Editor editor = pm.edit();
+		editor.putBoolean(ASC, asc);
+		editor.putInt(MODE, mode);
+		editor.commit();
 		return this;
+	}
+
+	private int id2mode(int newmode) {
+		switch(mode) {
+		case R.id.sortby_name:
+			return NAME;
+		case R.id.sortby_size:
+			return SIZE;
+		case R.id.sortby_date:
+		default:
+			return DATE;
+		}
 	}
 }
 
@@ -313,6 +342,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		Runnable pdclose = new Runnable() {
 			@Override
 			public void run() {
+				Collections.sort(all, new Sorter());
 				setListAdapter(new ImageAdapter(Browser.this, all));
 				pd.dismiss();
 				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
