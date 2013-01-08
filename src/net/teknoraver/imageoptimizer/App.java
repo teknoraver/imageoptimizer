@@ -1,19 +1,18 @@
 package net.teknoraver.imageoptimizer;
 
 import android.app.Application;
-import android.content.Context;
 
 public final class App extends Application {
-	private static Context c;
+	private static App a;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		c = this;
+		a = this;
 	}
 
-	public static Context getContext() {
-		return c;
+	public static App getContext() {
+		return a;
 	}
 
 	public static void debug(String txt) {
