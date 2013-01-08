@@ -47,8 +47,8 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 		try {
 			System.out.println("starting jpegoptim1 on " + files.size() + " files");
 			for(int i = 0; run && i < files.size(); i += SPLIT) {
-				List<String> files2 = files.subList(i, Math.min(i + SPLIT, files.size()));
-				ArrayList<String> args = new ArrayList<String>(files2.size() + 4);
+				List<String> sublist = files.subList(0, Math.min(SPLIT, files.size()));
+				ArrayList<String> args = new ArrayList<String>(sublist.size() + 4);
 				args.add(BIN);
 				args.add("-b");
 				args.add("-T" + threshold);
@@ -56,8 +56,8 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 					args.add("-m" + quality);
 				if(preserve)
 					args.add("-p");
-				args.addAll(files2);
-				System.out.println("starting jpegoptim2 on " + files2.size() + " files");
+				args.addAll(sublist);
+				System.out.println("starting jpegoptim2 on " + sublist.size() + " files");
 				Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 				BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
 				String line;
@@ -65,6 +65,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 					notifyObservers(line.split(","));
 				stdout.close();
 				jpegoptim.destroy();
+				sublist.clear();
 			}
 		} catch(IOException ioe) {
 			ioe.printStackTrace();

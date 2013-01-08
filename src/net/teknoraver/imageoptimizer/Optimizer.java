@@ -71,7 +71,8 @@ public class Optimizer extends Activity implements Observer, Runnable {
 		progress.setProgress(progress.getProgress() + 1);
 		origs.setText(" " + sizeString(origsize));
 		news.setText(" " + sizeString(newsize));
-		saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
+		if(origsize != 0)
+			saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
 	}
 
 	@Override
