@@ -228,8 +228,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			new AlertDialog.Builder(this)
 				.setTitle(getString(R.string.arch))
 				.setMessage(getString(R.string.sendmail))
-				.setNegativeButton("NO", this)
-				.setPositiveButton("SI", this)
+				.setNegativeButton(android.R.string.no, this)
+				.setPositiveButton(android.R.string.yes, this)
 				.setIcon(android.R.drawable.ic_dialog_email)
 				.create().show();
 		} else {
@@ -287,7 +287,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	public void onClick(DialogInterface dialog, int which) {
 		if(which == DialogInterface.BUTTON_POSITIVE) {
 			Intent intent = new Intent(Intent.ACTION_SEND);
-			intent.setType("text/plain");
+			intent.setType("message/rfc822");
 			intent.putExtra(Intent.EXTRA_EMAIL, new String[] {getString(R.string.email)});
 			intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.support_sub));
 			intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.support_msg));
@@ -297,8 +297,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				finish();
 				return;
 			}
-			Uri uri = Uri.parse("file://" + CPUINFO);
-			intent.putExtra(Intent.EXTRA_STREAM, uri);
+			intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + CPUINFO));
 			startActivity(Intent.createChooser(intent, getString(R.string.support_intent)));
 		}
 		finish();
