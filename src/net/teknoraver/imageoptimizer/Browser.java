@@ -1,26 +1,33 @@
 package net.teknoraver.imageoptimizer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,6 +38,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 class Image {
 	String path;
@@ -80,7 +88,8 @@ class Sorter implements Comparator<Image> {
 	}
 }
 
-public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable {
+public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
+	private static final String CPUINFO = "/proc/cpuinfo";
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
 	private ListView list;
@@ -95,13 +104,19 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		list = getListView();
 
 		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
-		getFile("jpegoptim");
+		try {
+			getFile("jpegoptim");
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_SHORT).show();
+			finish();
+		}
 
 		startScan();
 	}
 
 	private void startScan() {
-		pd = ProgressDialog.show(this, "Scanning files", "Scanning for picture files");
+		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
 		new Thread(this).start();
 	}
 
@@ -209,26 +224,87 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		startActivity(comp);
 	}
 
-	private void getFile(final String name) {
-                final File file = new File(getFilesDir(), name);
-                if (!file.exists())
-                        try {
-                                getFilesDir().mkdirs();
-                                final InputStream in = getAssets().open(name);
-                                final FileOutputStream out = new FileOutputStream(file);
-                                final byte[] buf = new byte[65536];
-                                int len;
-                                while ((len = in.read(buf)) > 0)
-                                        out.write(buf, 0, len);
-                                in.close();
-                                out.close();
-                                Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
-                        } catch (final IOException ex) {
-                                ex.printStackTrace();
-                                finish();
-                                return;
-                        }
+	private void getFile(final String name) throws IOException {
+		String binary = detectCpu();
+		if(binary == null) {
+			new AlertDialog.Builder(this)
+				.setTitle(getString(R.string.arch))
+				.setMessage(getString(R.string.sendmail))
+				.setNegativeButton("NO", this)
+				.setPositiveButton("SI", this)
+				.setIcon(android.R.drawable.ic_dialog_email)
+				.create().show();
+		} else {
+	                final File file = new File(getFilesDir(), name);
+	                if (!file.exists())
+	                        try {
+	                                getFilesDir().mkdirs();
+	                                final InputStream in = getAssets().open(name + '/' + binary);
+	                                final FileOutputStream out = new FileOutputStream(file);
+	                                final byte[] buf = new byte[65536];
+	                                int len;
+	                                while ((len = in.read(buf)) > 0)
+	                                        out.write(buf, 0, len);
+	                                in.close();
+	                                out.close();
+	                                Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
+	                        } catch (final IOException ex) {
+	                                ex.printStackTrace();
+	                                finish();
+	                                return;
+	                        }
+			}
         }
+
+	private String detectCpu() throws IOException {
+		if(Build.CPU_ABI.startsWith("arm")) {
+			BufferedReader cpuiinfo = new BufferedReader(new FileReader(CPUINFO));
+			String line;
+			while((line = cpuiinfo.readLine()) != null)
+				if(line.startsWith("Features"))
+					break;
+			cpuiinfo.close();
+
+			if(line == null)
+				return null;
+
+			if(line.contains("neon"))
+				return "arm/neon";
+			if(line.contains("vfp"))
+				return "arm/vfp";
+			if(line.contains("thumb"))
+				return "arm/soft";
+
+			return null;
+		}
+		if(Build.CPU_ABI.startsWith("x86"))
+			return "x86";
+		if(Build.CPU_ABI.startsWith("mips"))
+			return "mips";
+
+		return null;
+	}
+
+	@Override
+	public void onClick(DialogInterface dialog, int which) {
+		if(which == DialogInterface.BUTTON_POSITIVE) {
+			Intent intent = new Intent(Intent.ACTION_SEND);
+			intent.setType("text/plain");
+			intent.putExtra(Intent.EXTRA_EMAIL, new String[] {getString(R.string.email)});
+			intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.support_sub));
+			intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.support_msg));
+			File file = new File(CPUINFO);
+			if (!file.exists() || !file.canRead()) {
+				Toast.makeText(this, getString(R.string.support_atterror), Toast.LENGTH_SHORT).show();
+				finish();
+				return;
+			}
+			Uri uri = Uri.parse("file://" + CPUINFO);
+			intent.putExtra(Intent.EXTRA_STREAM, uri);
+			startActivity(Intent.createChooser(intent, getString(R.string.support_intent)));
+		}
+		finish();
+	}
 
 	@Override
 	public void run() {
@@ -238,6 +314,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			public void run() {
 				setListAdapter(new ImageAdapter(Browser.this, all));
 				pd.dismiss();
+				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_SHORT).show();
 			}
 		};
 		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
@@ -260,7 +337,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			b.setBackgroundResource(R.drawable.border);
 		b.setPadding(left, top, right, bottom);
 	}
-
 }
 class ImageAdapter extends ArrayAdapter<Image>
 {

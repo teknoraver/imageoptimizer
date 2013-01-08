@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Image Optimizer</string>
-    <string name="menu_settings">Settings</string>
-    <string name="optimize">Optimize</string>
-    <string name="compress">Compressing</string>
-    <string name="sall">Select all</string>
-    <string name="snone">Select none</string>
-    <string name="refresh">Refresh</string>
-    <string name="title_activity_compress">Image Optimization</string>
-    <string name="optimizing">Optimizing</string>
-    <string name="done">Done!</string>
-    <string name="origsize">Original size</string>
-    <string name="newsize">Optimized size</string>
-    <string name="saved">Saved space</string>
-
+	<string name="app_name">Image Optimizer</string>
+	<string name="menu_settings">Settings</string>
+	<string name="hint">Select some photos then press Optimize</string>
+	<string name="optimize">Optimize</string>
+	<string name="scanning_title">Scanning</string>
+	<string name="scanning_txt">Scanning for picture files</string>
+	<string name="compress">Compressing</string>
+	<string name="sall">Select all</string>
+	<string name="snone">Select none</string>
+	<string name="refresh">Refresh</string>
+	<string name="title_activity_compress">Image Optimization</string>
+	<string name="optimizing">Optimizing</string>
+	<string name="done">Done!</string>
+	<string name="origsize">Original size</string>
+	<string name="newsize">Optimized size</string>
+	<string name="saved">Saved space</string>
+	<string name="ioerror">FIlesystem error</string>
+    
+	<!-- ask for support -->
+	<string name="arch">Unsupported device</string>
+	<string name="sendmail">Your device is unsupported by Image Optimizer.\nWould you like to ask the developer to add support for your device?</string>
+	<string name="email">technoboy85@gmail.com</string>
+	<string name="support_sub">Image Optimizer arch Support</string>
+	<string name="support_msg">Hi,\n\nMy phone is unsupported by Image Optimizer, please add support for it.\n\nHere are attached some anonymous info on the CPU so you can do it!</string>
+	<string name="support_atterror">Attachment Error</string>
+	<string name="support_intent">Send email…</string>
 </resources>
