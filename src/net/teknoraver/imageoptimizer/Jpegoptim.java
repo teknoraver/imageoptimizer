@@ -45,7 +45,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	@Override
 	public void run() {
 		try {
-			System.out.println("starting jpegoptim1 on " + files.size() + " files");
+			App.debug("starting jpegoptim1 on " + files.size() + " files");
 			for(int i = 0; run && i < files.size(); i += SPLIT) {
 				List<String> sublist = files.subList(0, Math.min(SPLIT, files.size()));
 				ArrayList<String> args = new ArrayList<String>(sublist.size() + 4);
@@ -57,7 +57,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 				if(preserve)
 					args.add("-p");
 				args.addAll(sublist);
-				System.out.println("starting jpegoptim2 on " + sublist.size() + " files");
+				App.debug("starting jpegoptim2 on " + sublist.size() + " files");
 				Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 				BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
 				String line;

@@ -3,7 +3,7 @@ package net.teknoraver.imageoptimizer;
 import android.app.Application;
 import android.content.Context;
 
-public class App extends Application {
+public final class App extends Application {
 	private static Context c;
 
 	@Override
@@ -14,5 +14,10 @@ public class App extends Application {
 
 	public static Context getContext() {
 		return c;
+	}
+
+	public static void debug(String txt) {
+		if(BuildConfig.DEBUG)
+			System.out.println(txt);
 	}
 }

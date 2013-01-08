@@ -11,13 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -28,6 +21,13 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -454,15 +454,15 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 			Rect listBounds = new Rect(list.getScrollX(), list.getScrollY(), list.getScrollX() + list.getWidth(), list.getScrollY() + list.getHeight());
 
-			System.out.println("bounds " + bounds);
-			System.out.println("listBounds " + listBounds);
+			App.debug("bounds " + bounds);
+			App.debug("listBounds " + listBounds);
 
 			if(!Rect.intersects(listBounds, bounds)) {
-				System.out.println("skipping invisible " + path);
+				App.debug("skipping invisible " + path);
 				return null;
 			}*/
 
-			System.out.println("decoding " + image.path);
+			App.debug("decoding " + image.path);
 
 			BitmapFactory.Options boundOpts = new BitmapFactory.Options();
 			boundOpts.inJustDecodeBounds = true;

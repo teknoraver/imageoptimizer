@@ -3,9 +3,9 @@ package net.teknoraver.imageoptimizer;
 import java.util.Observable;
 import java.util.Observer;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.app.Activity;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
