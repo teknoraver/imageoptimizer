@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 
 /*
@@ -23,14 +24,15 @@ import java.util.Observable;
  */
 
 public class Jpegoptim extends Observable implements Serializable, Runnable {
+	private static final long serialVersionUID = 3209219570096678985L;
 	private boolean compress;
 	private int quality;
 	private ArrayList<String> files;
 	private boolean preserve;
 	private int threshold;
-	private Process jpegoptim;
-	private boolean run;
+	private boolean run = true;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
+	private static final int SPLIT = 100;
 
 	public Jpegoptim(ArrayList<String> checked, boolean l, int q, boolean p, int t) {
 		compress = l;
@@ -43,28 +45,31 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	@Override
 	public void run() {
 		try {
-			ArrayList<String> args = new ArrayList<String>(files.size() + 4);
-			args.add(BIN);
-			args.add("-b");
-			args.add("-T" + threshold);
-			if(compress)
-				args.add("-m" + quality);
-			if(preserve)
-				args.add("-p");
-			args.addAll(files);
-			System.out.println("starting jpegoptim");
-			run = true;
-			jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
-			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()));
-			String line;
-			while(run && (line = stdout.readLine()) != null)
-				notifyObservers(line.split(","));
-			stdout.close();
-			jpegoptim.destroy();
+			System.out.println("starting jpegoptim1 on " + files.size() + " files");
+			for(int i = 0; run && i < files.size(); i += SPLIT) {
+				List<String> files2 = files.subList(i, Math.min(i + SPLIT, files.size()));
+				ArrayList<String> args = new ArrayList<String>(files2.size() + 4);
+				args.add(BIN);
+				args.add("-b");
+				args.add("-T" + threshold);
+				if(compress)
+					args.add("-m" + quality);
+				if(preserve)
+					args.add("-p");
+				args.addAll(files2);
+				System.out.println("starting jpegoptim2 on " + files2.size() + " files");
+				Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
+				BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
+				String line;
+				while(run && (line = stdout.readLine()) != null)
+					notifyObservers(line.split(","));
+				stdout.close();
+				jpegoptim.destroy();
+			}
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
-		jpegoptim = null;
+		files.clear();
 		files = null;
 		notifyObservers(null);
 	}
@@ -82,7 +87,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 		return files.size();
 	}
 
-	static CharSequence version() {
+	static String version() {
 		try {
 			Process ver = Runtime.getRuntime().exec(new String[]{BIN, "-bV"});
 			byte buf[] = new byte[256];
@@ -90,7 +95,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 			String line = new String(buf, 0, in.read(buf));
 			in.close();
 			ver.destroy();
-			return line.subSequence(0, line.indexOf(','));
+			return line.subSequence(0, line.indexOf(',')).toString();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

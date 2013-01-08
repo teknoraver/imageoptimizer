@@ -19,7 +19,8 @@
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentLeft="true"
-		android:text="@string/optimize"/>
+		android:text="@string/optimize"
+		android:enabled="false"/>
 
 	<ListView
 		android:id="@android:id/list"

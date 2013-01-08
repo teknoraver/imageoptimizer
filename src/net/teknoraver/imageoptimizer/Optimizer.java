@@ -6,6 +6,7 @@ import java.util.Observer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -27,6 +28,7 @@ public class Optimizer extends Activity implements Observer, Runnable {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.optimizer);
 
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		jo = (Jpegoptim)getIntent().getSerializableExtra(OPTIMIZER);
 
 		currentfile = (TextView)findViewById(R.id.currentfile);
@@ -45,6 +47,8 @@ public class Optimizer extends Activity implements Observer, Runnable {
 	public void update(Observable observable, Object data) {
 		if(data != null) {
 			res = (String[])data;
+			if(res[6].equals("error"))
+				return;
 			origsize += Integer.parseInt(res[3]);
 			if(res[6].equals("optimized"))
 				newsize += Integer.parseInt(res[4]);
@@ -62,6 +66,7 @@ public class Optimizer extends Activity implements Observer, Runnable {
 		else {
 			((TextView)findViewById(R.id.currlabel)).setText(R.string.done);
 			currentfile.setText(null);
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}
 		progress.setProgress(progress.getProgress() + 1);
 		origs.setText(" " + sizeString(origsize));

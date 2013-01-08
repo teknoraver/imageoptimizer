@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -94,6 +95,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
 	private Sorter sorter = new Sorter();
+	private Button go;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -102,12 +104,13 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		list = getListView();
 
-		((Button)findViewById(R.id.optimize)).setOnClickListener(this);
+		go = (Button)findViewById(R.id.optimize);
+		go.setOnClickListener(this);
 		try {
 			getFile("jpegoptim");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
 			finish();
 		}
 
@@ -183,6 +186,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 					b.setBackgroundResource(R.drawable.border);
 				b.setPadding(left, top, right, bottom);
 			}
+			go.setEnabled(item.getItemId() == R.id.menu_all);
 //			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
 			return true;
 		case R.id.sortby_size:
@@ -256,7 +260,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	private String detectCpu() throws IOException {
 		if(Build.CPU_ABI.startsWith("arm")) {
-			BufferedReader cpuiinfo = new BufferedReader(new FileReader(CPUINFO));
+			BufferedReader cpuiinfo = new BufferedReader(new FileReader(CPUINFO), 1024);
 			String line;
 			while((line = cpuiinfo.readLine()) != null)
 				if(line.startsWith("Features"))
@@ -293,7 +297,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.support_msg));
 			File file = new File(CPUINFO);
 			if (!file.exists() || !file.canRead()) {
-				Toast.makeText(this, getString(R.string.support_atterror), Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, getString(R.string.support_atterror), Toast.LENGTH_LONG).show();
 				finish();
 				return;
 			}
@@ -311,7 +315,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			public void run() {
 				setListAdapter(new ImageAdapter(Browser.this, all));
 				pd.dismiss();
-				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_SHORT).show();
+				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
 			}
 		};
 		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
@@ -333,16 +337,32 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		else
 			b.setBackgroundResource(R.drawable.border);
 		b.setPadding(left, top, right, bottom);
+		enableButton();
+	}
+
+	private void enableButton() {
+		for(int i = 0; i < list.getCount(); i++) {
+			Image row = (Image)list.getItemAtPosition(i);
+			if(row.compress) {
+				go.setEnabled(true);
+				return;
+			}
+		}
+		go.setEnabled(false);
 	}
 }
 class ImageAdapter extends ArrayAdapter<Image>
 {
-	private static final int W = 320;
-	private static final int H = 240;
+	private int width;
+	private int height;
 
+	@SuppressWarnings("deprecation")
 	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
 		super(a, R.layout.listitem, f);
+		Display display = a.getWindowManager().getDefaultDisplay();
+		width = display.getWidth() / 4;
+		height = display.getHeight() / 4;
 	}
 
 	@Override
@@ -421,10 +441,10 @@ class ImageAdapter extends ArrayAdapter<Image>
 			BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
 			scaleOpts.inSampleSize = 1;
 			// round scale value to smaller power of two
-			if (boundOpts.outHeight > H || boundOpts.outWidth > W) {
+			if (boundOpts.outHeight > height || boundOpts.outWidth > width) {
 				scaleOpts.inSampleSize = (int)Math.pow(2, /*Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))*/
 					Math.ceil(
-						Math.log(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))
+						Math.log(Math.max(boundOpts.outWidth / width, boundOpts.outHeight / height))
 						/ Math.log(2)
 					)
 				);
