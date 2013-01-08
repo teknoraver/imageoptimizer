@@ -3,7 +3,6 @@ package net.teknoraver.imageoptimizer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -212,7 +211,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return;
 
 		Jpegoptim jo = new Jpegoptim(
-			getFilesDir() + "/jpegoptim",
 			checked,
 			pm.getBoolean("lossy", false),
 			pm.getInt("jpegquality", 75),

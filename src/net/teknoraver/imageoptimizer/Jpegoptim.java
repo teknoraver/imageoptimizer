@@ -2,6 +2,7 @@ package net.teknoraver.imageoptimizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,17 +26,16 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	private boolean compress;
 	private int quality;
 	private ArrayList<String> files;
-	private String bin;
 	private boolean preserve;
 	private int threshold;
 	private Process jpegoptim;
 	private boolean run;
+	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 
-	public Jpegoptim(String b, ArrayList<String> checked, boolean l, int q, boolean p, int t) {
+	public Jpegoptim(ArrayList<String> checked, boolean l, int q, boolean p, int t) {
 		compress = l;
 		quality = q;
 		files = checked;
-		bin = b;
 		preserve = p;
 		threshold = t;
 	}
@@ -44,7 +44,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	public void run() {
 		try {
 			ArrayList<String> args = new ArrayList<String>(files.size() + 4);
-			args.add(bin);
+			args.add(BIN);
 			args.add("-b");
 			args.add("-T" + threshold);
 			if(compress)
@@ -80,5 +80,20 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 
 	int count() {
 		return files.size();
+	}
+
+	static CharSequence version() {
+		try {
+			Process ver = Runtime.getRuntime().exec(new String[]{BIN, "-bV"});
+			byte buf[] = new byte[256];
+			InputStream in = ver.getInputStream();
+			String line = new String(buf, 0, in.read(buf));
+			in.close();
+			ver.destroy();
+			return line.subSequence(0, line.indexOf(','));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
