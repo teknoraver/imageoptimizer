@@ -152,6 +152,22 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	}
 
 	@Override
+	public void run() {
+		all.clear();
+		Runnable pdclose = new Runnable() {
+			@Override
+			public void run() {
+				Collections.sort(all, new Sorter());
+				setListAdapter(new ImageAdapter(Browser.this, all));
+				pd.dismiss();
+				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
+			}
+		};
+		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
+		handler.post(pdclose); 
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 
@@ -334,22 +350,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			startActivity(Intent.createChooser(intent, getString(R.string.support_intent)));
 		}
 		finish();
-	}
-
-	@Override
-	public void run() {
-		all.clear();
-		Runnable pdclose = new Runnable() {
-			@Override
-			public void run() {
-				Collections.sort(all, new Sorter());
-				setListAdapter(new ImageAdapter(Browser.this, all));
-				pd.dismiss();
-				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
-			}
-		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
-		handler.post(pdclose); 
 	}
 
 	@Override
