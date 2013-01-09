@@ -5,9 +5,7 @@ import android.app.Application;
 public final class App extends Application {
 	private static App a;
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
+	public App() {
 		a = this;
 	}
 
