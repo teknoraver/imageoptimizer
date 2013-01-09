@@ -17,7 +17,8 @@
 	<string name="origsize">Original size</string>
 	<string name="newsize">Optimized size</string>
 	<string name="saved">Saved space</string>
-	<string name="ioerror">FIlesystem error</string>
+	<string name="ioerror">Filesystem error</string>
+	<string name="noimages">No Images Found</string>
     
 	<!-- ask for support -->
 	<string name="arch">Unsupported device</string>

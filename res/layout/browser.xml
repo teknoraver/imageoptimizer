@@ -29,4 +29,12 @@
 		android:layout_above="@id/optimize"
 		android:layout_below="@id/adView"/>
 
+	<TextView
+		android:id="@android:id/empty"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_below="@id/adView"
+		android:gravity="center"
+		android:text="@string/noimages"
+		android:textAppearance="?android:attr/textAppearanceLarge" />
 </RelativeLayout>
