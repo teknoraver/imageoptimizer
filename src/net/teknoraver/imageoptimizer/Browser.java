@@ -164,6 +164,11 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			}
 		};
 		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
+
+		// FIX for GS3, I can't use the new API as aren't available in API level 7!
+		File sdext = new File("/mnt/extSdCard/DCIM");
+		if(sdext.isDirectory())
+			scan(sdext);
 		handler.post(pdclose); 
 	}
 
