@@ -266,7 +266,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		Jpegoptim jo = new Jpegoptim(
 			checked,
-			pm.getBoolean("lossy", false),
+			pm.getBoolean("lossy", true),
 			pm.getInt("jpegquality", 75),
 			pm.getBoolean("timestamp", true),
 			pm.getInt("threshold", 10));
