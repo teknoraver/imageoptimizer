@@ -18,8 +18,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected int threshold;
 	protected boolean run = true;
 
-
-	public Optimizer(ArrayList<String> f, int q, boolean p, int t) {
+	Optimizer(ArrayList<String> f, int q, boolean p, int t) {
 		quality = q;
 		files = f;
 		preserve = p;

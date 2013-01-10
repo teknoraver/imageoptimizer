@@ -26,7 +26,7 @@ class Jpegoptim extends Optimizer {
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 	private boolean compress;
 
-	public Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
+	Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
 		super(f, q, p, t);
 		if(quality >= 0)
 			compress = true;

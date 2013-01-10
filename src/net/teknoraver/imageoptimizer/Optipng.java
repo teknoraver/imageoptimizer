@@ -6,7 +6,7 @@ import java.util.List;
 class Optipng extends Optimizer {
 	private static final long serialVersionUID = 3211055437537470542L;
 
-	public Optipng(ArrayList<String> f, int q, boolean p, int t) {
+	Optipng(ArrayList<String> f, int q, boolean p, int t) {
 		super(f, q, p, t);
 	}
 
