@@ -7,7 +7,7 @@ import java.util.Observable;
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
 
-	static String EXT; 
+	static String EXT;
 
 	protected int quality;
 	protected ArrayList<String> files;
@@ -36,5 +36,6 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		return files.size();
 	}
 
+	abstract String getExt();
 	abstract String version();
 }

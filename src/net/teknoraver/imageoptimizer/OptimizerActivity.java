@@ -7,7 +7,6 @@ import java.util.Observer;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -24,7 +23,9 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	private TextView saved;
 	private ProgressBar progress;
 	private long origsize, newsize;
+	private TextView currlabel;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -33,6 +34,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		optimizers = (ArrayList<Optimizer>)getIntent().getSerializableExtra(OPTIMIZER);
 
+		currlabel = (TextView)findViewById(R.id.currlabel);
 		currentfile = (TextView)findViewById(R.id.currentfile);
 		progress = (ProgressBar)findViewById(R.id.progress);
 		origs = (TextView)findViewById(R.id.origsize);
@@ -40,8 +42,9 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		saved = (TextView)findViewById(R.id.saved);
 
 		for(Optimizer optim : optimizers) {
+			currlabel.setText(getString(R.string.optimizing) + ' ' + optim.getExt() + " files");
 			progress.setMax(optim.count());
-	
+
 			optim.addObserver(this);
 			new Thread(optim).start();
 		}
@@ -68,7 +71,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		if(res != null)
 			currentfile.setText(" " + res[0].substring(res[0].lastIndexOf('/') + 1));
 		else {
-			((TextView)findViewById(R.id.currlabel)).setText(R.string.done);
+			currlabel.setText(R.string.done);
 			currentfile.setText(null);
 			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}

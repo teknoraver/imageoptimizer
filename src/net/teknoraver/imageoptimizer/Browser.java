@@ -169,7 +169,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		File sdext = new File("/mnt/extSdCard/DCIM");
 		if(sdext.isDirectory())
 			scan(sdext);
-		handler.post(pdclose); 
+		handler.post(pdclose);
 	}
 
 	@Override
@@ -405,7 +405,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) 
+	public View getView(int position, View convertView, ViewGroup parent)
 	{
 //		if(convertView == null) {
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);

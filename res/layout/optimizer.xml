@@ -17,9 +17,7 @@
 		android:id="@+id/currentfile"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_alignParentRight="true"
-		android:layout_alignParentTop="true"
-		android:layout_toRightOf="@id/currlabel"
+		android:layout_below="@id/currlabel"
 		android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	<ProgressBar
