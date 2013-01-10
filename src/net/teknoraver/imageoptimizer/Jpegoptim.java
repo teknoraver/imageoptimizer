@@ -21,7 +21,7 @@ import java.util.List;
  * 6	optimized/skipped/error
  */
 
-public class Jpegoptim extends Optimizer {
+class Jpegoptim extends Optimizer {
 	private static final long serialVersionUID = -2673614600679067178L;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 	private boolean compress;

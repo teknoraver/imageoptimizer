@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -119,12 +118,15 @@ class Sorter implements Comparator<Image> {
 
 public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
 	private static final String CPUINFO = "/proc/cpuinfo";
+	private static final String JPG = "dojpeg";
+	private static final String PNG = "dopng";
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
 	private Sorter sorter = new Sorter();
 	private Button go;
+	private SharedPreferences pm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +137,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		go = (Button)findViewById(R.id.optimize);
 		go.setOnClickListener(this);
+
+		pm = PreferenceManager.getDefaultSharedPreferences(this);
+
 		try {
 			getFile("jpegoptim");
 		} catch (IOException ioe) {
@@ -206,9 +211,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		if(pathname.getName().endsWith(".jpg"))
-			return true;
-		return false;
+		return	pm.getBoolean(JPG, true) && pathname.toString().endsWith(".jpg") ||
+			pm.getBoolean(PNG, true) && pathname.toString().endsWith(".png");
 	}
 
 	@Override
@@ -254,26 +258,36 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	@Override
 	public void onClick(View v) {
-		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
-		ArrayList<String> checked = new ArrayList<String>(list.getCount());
+		ArrayList<String> jpgs = new ArrayList<String>(list.getCount());
+		ArrayList<String> pngs = new ArrayList<String>(list.getCount());
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
-			if(row.compress)
-				checked.add(row.path);
+			if(row.compress) {
+				if(row.path.toString().endsWith(".jpg"))
+					jpgs.add(row.path);
+				else if(row.path.toString().endsWith(".png"))
+					pngs.add(row.path);
+			}
 		}
-		if(checked.isEmpty())
+		if(jpgs.isEmpty() && pngs.isEmpty())
 			return;
 
-		int quality = -1;
-		if(pm.getBoolean("lossy", true))
-			pm.getInt("jpegquality", 75);
-		Jpegoptim jo = new Jpegoptim(
-			checked,
-			quality,
-			pm.getBoolean("timestamp", true),
-			pm.getInt("threshold", 10));
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
-		optimizers.add(jo);
+		if(pm.getBoolean(JPG, true)) {
+			int quality = -1;
+			if(pm.getBoolean("lossy", true))
+				pm.getInt("jpegquality", 75);
+			Jpegoptim jo = new Jpegoptim(
+				jpgs,
+				quality,
+				pm.getBoolean("timestamp", true),
+				pm.getInt("threshold", 10));
+			optimizers.add(jo);
+		}
+		if(pm.getBoolean(JPG, true)) {
+			Optipng op = new Optipng(pngs, pm.getInt("pngquality", 7), pm.getBoolean("timestamp", true), 0);
+			optimizers.add(op);
+		}
 
 		Intent comp = new Intent(this, OptimizerActivity.class);
 		comp.putExtra(OptimizerActivity.OPTIMIZER, optimizers);

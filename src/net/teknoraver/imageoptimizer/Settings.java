@@ -98,12 +98,12 @@ public class Settings extends PreferenceActivity {
 		bindPreferenceSummaryToValue(findPreference("jpegquality"));
 		bindPreferenceSummaryToValue(findPreference("threshold"));
 
-/*		// PNG
+		// PNG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_png);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_png);
-		bindPreferenceSummaryToValue(findPreference("pngquality"));*/
+		bindPreferenceSummaryToValue(findPreference("pngquality"));
 	}
 
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
