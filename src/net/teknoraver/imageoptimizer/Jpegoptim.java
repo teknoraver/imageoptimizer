@@ -24,7 +24,6 @@ import java.util.List;
 public class Jpegoptim extends Optimizer {
 	private static final long serialVersionUID = -2673614600679067178L;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
-	private static final int SPLIT = 100;
 	private boolean compress;
 
 	public Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
@@ -34,36 +33,28 @@ public class Jpegoptim extends Optimizer {
 	}
 
 	@Override
-	public void run() {
+	public void compress(List<String> sublist) {
 		try {
-			App.debug("starting jpegoptim1 on " + files.size() + " files");
-			for(int i = 0; run && i < files.size(); i += SPLIT) {
-				List<String> sublist = files.subList(0, Math.min(SPLIT, files.size()));
-				ArrayList<String> args = new ArrayList<String>(sublist.size() + 4);
-				args.add(BIN);
-				args.add("-b");
-				args.add("-T" + threshold);
-				if(compress)
-					args.add("-m" + quality);
-				if(preserve)
-					args.add("-p");
-				args.addAll(sublist);
-				App.debug("starting jpegoptim2 on " + sublist.size() + " files");
-				Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
-				BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
-				String line;
-				while(run && (line = stdout.readLine()) != null)
-					notifyObservers(line.split(","));
-				stdout.close();
-				jpegoptim.destroy();
-				sublist.clear();
-			}
+			ArrayList<String> args = new ArrayList<String>(sublist.size() + 4);
+			args.add(BIN);
+			args.add("-b");
+			args.add("-T" + threshold);
+			if(compress)
+				args.add("-m" + quality);
+			if(preserve)
+				args.add("-p");
+			args.addAll(sublist);
+			App.debug("starting jpegoptim2 on " + sublist.size() + " files");
+			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
+			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
+			String line;
+			while(run && (line = stdout.readLine()) != null)
+				notifyObservers(line.split(","));
+			stdout.close();
+			jpegoptim.destroy();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
-		files.clear();
-		files = null;
-		notifyObservers(null);
 	}
 
 	@Override
