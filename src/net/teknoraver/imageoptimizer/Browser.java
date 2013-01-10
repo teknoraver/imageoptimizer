@@ -277,17 +277,13 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			int quality = -1;
 			if(pm.getBoolean("lossy", true))
 				pm.getInt("jpegquality", 75);
-			Jpegoptim jo = new Jpegoptim(
-				jpgs,
-				quality,
-				pm.getBoolean("timestamp", true),
-				pm.getInt("threshold", 10));
-			optimizers.add(jo);
+			optimizers.add(new Jpegoptim(	jpgs,
+							quality,
+							pm.getBoolean("timestamp", true),
+							pm.getInt("threshold", 10)));
 		}
-		if(pm.getBoolean(JPG, true)) {
-			Optipng op = new Optipng(pngs, pm.getInt("pngquality", 7), pm.getBoolean("timestamp", true), 0);
-			optimizers.add(op);
-		}
+		if(pm.getBoolean(JPG, true))
+			optimizers.add(new Optipng(pngs, pm.getInt("pngquality", 7), pm.getBoolean("timestamp", true), 0));
 
 		Intent comp = new Intent(this, OptimizerActivity.class);
 		comp.putExtra(OptimizerActivity.OPTIMIZER, optimizers);

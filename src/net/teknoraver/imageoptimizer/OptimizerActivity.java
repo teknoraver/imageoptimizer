@@ -41,13 +41,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		news = (TextView)findViewById(R.id.newsize);
 		saved = (TextView)findViewById(R.id.saved);
 
-		for(Optimizer optim : optimizers) {
-			currlabel.setText(getString(R.string.optimizing) + ' ' + optim.getExt() + " files");
-			progress.setMax(optim.count());
-
-			optim.addObserver(this);
-			new Thread(optim).start();
-		}
+		update(null, null);
 	}
 
 	@Override
@@ -61,8 +55,17 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 				newsize += Integer.parseInt(res[4]);
 			else
 				newsize += Integer.parseInt(res[3]);
-		} else
-			res = null;
+		} else {
+			if(!optimizers.isEmpty()) {
+				Optimizer optim = optimizers.get(0);
+				progress.setMax(optim.count());
+				progress.setProgress(0);
+
+				optim.addObserver(this);
+				new Thread(optim).start();
+			}
+			res = null; // go to next optimizer
+		}
 		handler.post(this);
 	}
 
@@ -71,9 +74,15 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		if(res != null)
 			currentfile.setText(" " + res[0].substring(res[0].lastIndexOf('/') + 1));
 		else {
-			currlabel.setText(R.string.done);
-			currentfile.setText(null);
-			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			// next optimizer
+			if(!optimizers.isEmpty()) {
+				Optimizer optim = optimizers.remove(0);
+				currlabel.setText(getString(R.string.optimizing) + ' ' + optim.getExt() + " files");
+			} else { // all done
+				currlabel.setText(R.string.done);
+				currentfile.setText(null);
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			}
 		}
 		progress.setProgress(progress.getProgress() + 1);
 		origs.setText(" " + sizeString(origsize));
