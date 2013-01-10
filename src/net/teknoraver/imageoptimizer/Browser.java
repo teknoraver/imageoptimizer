@@ -282,7 +282,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 							pm.getBoolean("timestamp", true),
 							pm.getInt("threshold", 10)));
 		}
-		if(pm.getBoolean(JPG, true))
+		if(pm.getBoolean(PNG, true))
 			optimizers.add(new Optipng(pngs, pm.getInt("pngquality", 7), pm.getBoolean("timestamp", true), 0));
 
 		Intent comp = new Intent(this, OptimizerActivity.class);

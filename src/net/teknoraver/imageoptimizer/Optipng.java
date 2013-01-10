@@ -16,7 +16,7 @@ class Optipng extends Optimizer {
 			try {
 				Thread.sleep((long) (Math.random() * 800 + 200));
 			} catch (InterruptedException e) { }
-			notifyObservers(new String[]{sublist.get(i),"2048x1536","24bit",(int)(Math.random() * 1000 + 200) + "",(int)(Math.random() * 200 + 50) + "",(int)(Math.random() * 80 + 20) + "","optimized"});
+			notifyObservers(new String[]{sublist.get(i),"2048x1536","24bit",(int)(Math.random() * 1000000 + 200000) + "",(int)(Math.random() * 200000 + 50000) + "",(int)(Math.random() * 80 + 20) + "","optimized"});
 		}
 	}
 
