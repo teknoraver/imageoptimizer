@@ -264,15 +264,19 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		if(checked.isEmpty())
 			return;
 
+		int quality = -1;
+		if(pm.getBoolean("lossy", true))
+			pm.getInt("jpegquality", 75);
 		Jpegoptim jo = new Jpegoptim(
 			checked,
-			pm.getBoolean("lossy", false),
-			pm.getInt("jpegquality", 75),
+			quality,
 			pm.getBoolean("timestamp", true),
 			pm.getInt("threshold", 10));
+		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
+		optimizers.add(jo);
 
-		Intent comp = new Intent(this, Optimizer.class);
-		comp.putExtra(Optimizer.OPTIMIZER, jo);
+		Intent comp = new Intent(this, OptimizerActivity.class);
+		comp.putExtra(OptimizerActivity.OPTIMIZER, optimizers);
 		startActivity(comp);
 	}
 
@@ -423,7 +427,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
 		long len = image.size;
-		size.setText(Optimizer.sizeString(len));
+		size.setText(OptimizerActivity.sizeString(len));
 
 		ImageView b = (ImageView)convertView.findViewById(R.id.grid_item_image);
 		int left = b.getPaddingLeft();

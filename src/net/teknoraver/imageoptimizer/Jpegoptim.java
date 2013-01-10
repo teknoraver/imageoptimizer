@@ -23,23 +23,16 @@ import java.util.Observable;
  * 6	optimized/skipped/error
  */
 
-public class Jpegoptim extends Observable implements Serializable, Runnable {
-	private static final long serialVersionUID = 3209219570096678985L;
-	private boolean compress;
-	private int quality;
-	private ArrayList<String> files;
-	private boolean preserve;
-	private int threshold;
-	private boolean run = true;
+public class Jpegoptim extends Optimizer {
+	private static final long serialVersionUID = -2673614600679067178L;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 	private static final int SPLIT = 100;
+	private boolean compress;
 
-	public Jpegoptim(ArrayList<String> checked, boolean l, int q, boolean p, int t) {
-		compress = l;
-		quality = q;
-		files = checked;
-		preserve = p;
-		threshold = t;
+	public Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
+		super(f, q, p, t);
+		if(quality >= 0)
+			compress = true;
 	}
 
 	@Override
@@ -76,19 +69,7 @@ public class Jpegoptim extends Observable implements Serializable, Runnable {
 	}
 
 	@Override
-	public boolean hasChanged() {
-		return true;
-	}
-
-	void abort() {
-		run = false;
-	}
-
-	int count() {
-		return files.size();
-	}
-
-	static String version() {
+	String version() {
 		try {
 			Process ver = Runtime.getRuntime().exec(new String[]{BIN, "-bV"});
 			byte buf[] = new byte[256];
