@@ -142,6 +142,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		try {
 			getFile("jpegoptim");
+			getFile("optipng");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
@@ -276,7 +277,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		if(pm.getBoolean(JPG, true)) {
 			int quality = -1;
 			if(pm.getBoolean("lossy", true))
-				pm.getInt("jpegquality", 75);
+				quality = pm.getInt("jpegquality", 75);
 			optimizers.add(new Jpegoptim(	jpgs,
 							quality,
 							pm.getBoolean("timestamp", true),
