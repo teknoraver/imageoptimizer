@@ -1,5 +1,7 @@
 package net.teknoraver.imageoptimizer;
 
+//import com.nullwire.trace.ExceptionHandler;
+
 import android.app.Application;
 
 public final class App extends Application {
@@ -7,6 +9,8 @@ public final class App extends Application {
 
 	public App() {
 		a = this;
+//		if(BuildConfig.DEBUG)
+//			ExceptionHandler.register(this);
 	}
 
 	public static App getContext() {
