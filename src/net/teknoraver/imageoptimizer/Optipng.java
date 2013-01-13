@@ -22,8 +22,8 @@ class Optipng extends Optimizer {
 	private static final long serialVersionUID = 3211055437537470542L;
 	private static final String BIN = App.getContext().getFilesDir() + "/optipng";
 
-	Optipng(ArrayList<String> f, int q, boolean p, int t) {
-		super(f, q, p, t);
+	Optipng(ArrayList<String> f, int q, boolean p) {
+		super(f, q, p);
 	}
 
 	@Override
@@ -40,9 +40,12 @@ class Optipng extends Optimizer {
 			String line;
 			while(run && (line = stdout.readLine()) != null) {
 				try {
-					App.debug(line);
+//					App.debug(line);
 					String res[] = line.split(",");
-					notifyObservers(new Result(res[0], Integer.parseInt(res[1]), Integer.parseInt(res[2]), res[4].equals("optimized")));
+					if(res[4].equals("error"))
+						notifyObservers(new Result());
+					else
+						notifyObservers(new Result(res[0], Integer.parseInt(res[1]), Integer.parseInt(res[2]), res[4].equals("optimized")));
 				} catch(RuntimeException r) {
 					notifyObservers(new Result());
 				}

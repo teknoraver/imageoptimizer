@@ -62,15 +62,13 @@ class Sorter implements Comparator<Image> {
 	private static final int NAME = 0;
 	private static final int SIZE = 1;
 	private static final int DATE = 2;
-	private static final String ASC = "ascendent";
-	private static final String MODE = "mode";
 	private int mode;
 	private boolean asc;
 	private SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
 
 	Sorter() {
-		asc = pm.getBoolean(ASC, false);
-		mode = pm.getInt(MODE, DATE);
+		asc = pm.getBoolean(Settings.ASC, false);
+		mode = pm.getInt(Settings.MODE, DATE);
 	}
 
 	@Override
@@ -97,8 +95,8 @@ class Sorter implements Comparator<Image> {
 		asc = mode == newmode ? !asc : true;
 		mode = newmode;
 		Editor editor = pm.edit();
-		editor.putBoolean(ASC, asc);
-		editor.putInt(MODE, mode);
+		editor.putBoolean(Settings.ASC, asc);
+		editor.putInt(Settings.MODE, mode);
 		editor.commit();
 		return this;
 	}
@@ -118,8 +116,7 @@ class Sorter implements Comparator<Image> {
 
 public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
 	private static final String CPUINFO = "/proc/cpuinfo";
-	private static final String JPG = "dojpeg";
-	private static final String PNG = "dopng";
+
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
 	private ListView list;
@@ -212,8 +209,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		return	pm.getBoolean(JPG, true) && pathname.toString().endsWith(".jpg") ||
-			pm.getBoolean(PNG, true) && pathname.toString().endsWith(".png");
+		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && pathname.toString().endsWith(".png");
 	}
 
 	@Override
@@ -274,21 +271,21 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return;
 
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
-		if(pm.getBoolean(JPG, true)) {
+		if(pm.getBoolean(Settings.JPG, true)) {
 			int quality = -1;
-			if(pm.getBoolean("lossy", true))
-				quality = pm.getInt("jpegquality", 75);
+			if(pm.getBoolean(Settings.LOSSY, true))
+				quality = pm.getInt(Settings.JPEGQ, 75);
 			optimizers.add(new Jpegoptim(	jpgs,
 							quality,
-							pm.getBoolean("timestamp", true),
-							pm.getInt("threshold", 10)));
+							pm.getBoolean(Settings.TIMESTAMP, true),
+							pm.getInt(Settings.THRESHOLD, 10)));
 		}
-		if(pm.getBoolean(PNG, true))
-			optimizers.add(new Optipng(pngs, pm.getInt("pngquality", 1), pm.getBoolean("timestamp", true), 0));
+		if(pm.getBoolean(Settings.PNG, true))
+			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
 
-		Intent comp = new Intent(this, OptimizerActivity.class);
-		comp.putExtra(OptimizerActivity.OPTIMIZER, optimizers);
-		startActivity(comp);
+		startActivity(new Intent(this, OptimizerActivity.class)
+			.putExtra(OptimizerActivity.OPTIMIZER, optimizers)
+		);
 	}
 
 	private void getFile(final String name) throws IOException {
@@ -482,7 +479,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 				return null;
 			}*/
 
-			App.debug("decoding " + image.path);
+			// App.debug("decoding " + image.path);
 
 			BitmapFactory.Options boundOpts = new BitmapFactory.Options();
 			boundOpts.inJustDecodeBounds = true;

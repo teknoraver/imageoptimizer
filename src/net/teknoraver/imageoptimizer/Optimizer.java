@@ -8,14 +8,11 @@ import java.util.Observable;
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
 
-	static String EXT;
-
 	protected static final int SPLIT = 100;
 
 	protected int quality;
 	protected ArrayList<String> files;
 	protected boolean preserve;
-	protected int threshold;
 	protected boolean run = true;
 
 	class Result {
@@ -37,11 +34,10 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 	}
 
-	Optimizer(ArrayList<String> f, int q, boolean p, int t) {
+	Optimizer(ArrayList<String> f, int q, boolean p) {
 		quality = q;
 		files = f;
 		preserve = p;
-		threshold = t;
 	}
 
 	@Override
@@ -51,15 +47,19 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 
 	@Override
 	public void run() {
-		App.debug("starting jpegoptim1 on " + files.size() + " files");
-		for(int i = 0; run && i < files.size(); i += SPLIT) {
-			List<String> sublist = files.subList(0, Math.min(SPLIT, files.size()));
+		App.debug("starting optimization on " + files.size() + " files");
+		while(!files.isEmpty()) {
+			List<String> sublist;
+			if(files.size() < SPLIT)
+				sublist = files;
+			else
+				sublist = files.subList(0, SPLIT);
 
+			App.debug("optimization on " + sublist.size() + "/" + files.size());
 			compress(sublist);
 
 			sublist.clear();
 		}
-		files.clear();
 		files = null;
 		notifyObservers(null);
 	}

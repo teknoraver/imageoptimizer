@@ -25,11 +25,13 @@ class Jpegoptim extends Optimizer {
 	private static final long serialVersionUID = -2673614600679067178L;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 	private boolean compress;
+	private int threshold;
 
 	Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
-		super(f, q, p, t);
+		super(f, q, p);
 		if(quality >= 0)
 			compress = true;
+		threshold = t;
 	}
 
 	@Override
@@ -50,9 +52,12 @@ class Jpegoptim extends Optimizer {
 			String line;
 			while(run && (line = stdout.readLine()) != null) {
 				try {
-					App.debug(line);
+//					App.debug(line);
 					String res[] = line.split(",");
-					notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
+					if(res[6].equals("error"))
+						notifyObservers(new Result());
+					else
+						notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
 				} catch(RuntimeException r) {
 					notifyObservers(new Result());
 				}

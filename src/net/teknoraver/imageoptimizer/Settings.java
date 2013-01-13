@@ -28,6 +28,16 @@ import android.view.MenuItem;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class Settings extends PreferenceActivity {
+	static final String ASC = "ascendent";
+	static final String MODE = "mode";
+	static final String LOSSY = "lossy";
+	static final String JPG = "dojpeg";
+	static final String PNG = "dopng";
+	static final String JPEGQ = "jpegquality";
+	static final String TIMESTAMP = "timestamp";
+	static final String THRESHOLD = "threshold";
+	static final String PNGQ = "pngquality";
+
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are

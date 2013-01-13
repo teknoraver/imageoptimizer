@@ -46,37 +46,39 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 
 	@Override
 	public void update(Observable observable, Object data) {
-		if(data != null) {
-			res = (Optimizer.Result)data;
-			if(res.error)
-				return;
-			origsize += res.origsize;
-			if(res.compressed)
-				newsize += res.newsize;
-			else
-				newsize += res.origsize;
-		} else {
-			if(!optimizers.isEmpty()) {
-				Optimizer optim = optimizers.get(0);
-				progress.setMax(optim.count());
-				progress.setProgress(0);
-
-				optim.addObserver(this);
-				new Thread(optim).start();
-			}
-			res = null; // go to next optimizer
-		}
+		res = (Optimizer.Result)data;
 		handler.post(this);
 	}
 
 	@Override
 	public void run() {
-		if(res != null)
-			currentfile.setText(" " + res.path.substring(res.path.lastIndexOf('/') + 1));
-		else {
-			// next optimizer
+		if(res != null) {
+			if(res.error) {
+				App.debug("error optimizing: " + res.path);
+				return;
+			}
+
+			origsize += res.origsize;
+			if(res.compressed)
+				newsize += res.newsize;
+			else
+				newsize += res.origsize;
+
+			currentfile.setText(res.path.substring(res.path.lastIndexOf('/') + 1));
+			progress.setProgress(progress.getProgress() + 1);
+			origs.setText(" " + sizeString(origsize));
+			news.setText(" " + sizeString(newsize));
+			if(origsize != 0)
+				saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
+		} else {
 			if(!optimizers.isEmpty()) {
 				Optimizer optim = optimizers.remove(0);
+				progress.setMax(optim.count());
+				progress.setProgress(0);
+
+				optim.addObserver(this);
+				new Thread(optim).start();
+
 				currlabel.setText(getString(R.string.optimizing) + ' ' + optim.getExt() + " files");
 			} else { // all done
 				currlabel.setText(R.string.done);
@@ -84,11 +86,6 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 			}
 		}
-		progress.setProgress(progress.getProgress() + 1);
-		origs.setText(" " + sizeString(origsize));
-		news.setText(" " + sizeString(newsize));
-		if(origsize != 0)
-			saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
 	}
 
 	@Override
