@@ -15,7 +15,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 
 	public static final String OPTIMIZER = "optim";
 	private ArrayList<Optimizer> optimizers;
-	private String res[];
+	private Optimizer.Result res;
 	private Handler handler = new Handler();
 	private TextView currentfile;
 	private TextView origs;
@@ -47,14 +47,14 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	@Override
 	public void update(Observable observable, Object data) {
 		if(data != null) {
-			res = (String[])data;
-			if(res[6].equals("error"))
+			res = (Optimizer.Result)data;
+			if(!res.compressed)
 				return;
-			origsize += Integer.parseInt(res[3]);
-			if(res[6].equals("optimized"))
-				newsize += Integer.parseInt(res[4]);
+			origsize += res.origsize;
+			if(res.compressed)
+				newsize += res.newsize;
 			else
-				newsize += Integer.parseInt(res[3]);
+				newsize += res.origsize;
 		} else {
 			if(!optimizers.isEmpty()) {
 				Optimizer optim = optimizers.get(0);
@@ -72,7 +72,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	@Override
 	public void run() {
 		if(res != null)
-			currentfile.setText(" " + res[0].substring(res[0].lastIndexOf('/') + 1));
+			currentfile.setText(" " + res.path.substring(res.path.lastIndexOf('/') + 1));
 		else {
 			// next optimizer
 			if(!optimizers.isEmpty()) {

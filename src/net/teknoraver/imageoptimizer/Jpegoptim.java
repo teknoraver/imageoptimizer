@@ -44,12 +44,18 @@ class Jpegoptim extends Optimizer {
 			if(preserve)
 				args.add("-p");
 			args.addAll(sublist);
-			App.debug("starting jpegoptim2 on " + sublist.size() + " files");
+			App.debug("starting jpegoptim on " + sublist.size() + " files");
 			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
 			String line;
-			while(run && (line = stdout.readLine()) != null)
-				notifyObservers(line.split(","));
+			while(run && (line = stdout.readLine()) != null) {
+				try {
+					String res[] = line.split(",");
+					notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
+				} catch(RuntimeException r) {
+					notifyObservers(new Result());
+				}
+			}
 			stdout.close();
 			jpegoptim.destroy();
 		} catch(IOException ioe) {

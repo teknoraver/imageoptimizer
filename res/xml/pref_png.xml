@@ -8,9 +8,9 @@
 		android:title="@string/dopng" />
 
 	<net.teknoraver.seekbar.SeekBarPreference
-		android:defaultValue="7"
+		android:defaultValue="1"
 		android:max="7"
-		robobunny:min="1"
+		robobunny:min="0"
 		android:key="pngquality"
 		android:title="@string/pngquality"
 		android:dependency="dopng"/>

@@ -18,6 +18,25 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected int threshold;
 	protected boolean run = true;
 
+	class Result {
+		String path;
+		long origsize;
+		long newsize;
+		boolean compressed;
+		boolean error;
+
+		public Result() {
+			error = true;
+		}
+
+		public Result(String p, long o, long n, boolean c) {
+			path = p;
+			origsize = o;
+			newsize = n;
+			compressed = c;
+		}
+	}
+
 	Optimizer(ArrayList<String> f, int q, boolean p, int t) {
 		quality = q;
 		files = f;
