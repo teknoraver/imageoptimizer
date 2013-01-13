@@ -9,9 +9,14 @@ public final class App extends Application {
 
 	public App() {
 		a = this;
-//		if(BuildConfig.DEBUG)
-//			ExceptionHandler.register(this);
 	}
+
+/*	@Override
+	public void onCreate() {
+		super.onCreate();
+		if(BuildConfig.DEBUG)
+			ExceptionHandler.register(this);
+	}*/
 
 	public static App getContext() {
 		return a;

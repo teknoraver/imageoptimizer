@@ -214,8 +214,8 @@ public class Settings extends PreferenceActivity {
 		}
 	}
 
-/*	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public class PngPreferenceFragment extends PreferenceFragment {
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	static public class PngPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
@@ -223,5 +223,5 @@ public class Settings extends PreferenceActivity {
 
 			bindPreferenceSummaryToValue(findPreference("pngquality"));
 		}
-	}*/
+	}
 }

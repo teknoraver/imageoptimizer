@@ -15,7 +15,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected boolean preserve;
 	protected boolean run = true;
 
-	class Result {
+	static class Result {
 		String path;
 		long origsize;
 		long newsize;
@@ -31,6 +31,10 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 			origsize = o;
 			newsize = n;
 			compressed = c;
+		}
+
+		String getName() {
+			return path.substring(path.lastIndexOf('/') + 1);
 		}
 	}
 

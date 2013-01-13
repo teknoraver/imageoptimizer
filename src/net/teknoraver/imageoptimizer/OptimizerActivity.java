@@ -64,7 +64,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			else
 				newsize += res.origsize;
 
-			currentfile.setText(res.path.substring(res.path.lastIndexOf('/') + 1));
+			currentfile.setText(res.getName());
 			progress.setProgress(progress.getProgress() + 1);
 			origs.setText(" " + sizeString(origsize));
 			news.setText(" " + sizeString(newsize));
