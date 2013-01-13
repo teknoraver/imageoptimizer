@@ -24,6 +24,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	private ProgressBar progress;
 	private long origsize, newsize;
 	private TextView currlabel;
+	private Optimizer currentOptim;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -72,14 +73,14 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 				saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
 		} else {
 			if(!optimizers.isEmpty()) {
-				Optimizer optim = optimizers.remove(0);
-				progress.setMax(optim.count());
+				currentOptim = optimizers.remove(0);
+				progress.setMax(currentOptim.count());
 				progress.setProgress(0);
 
-				optim.addObserver(this);
-				new Thread(optim).start();
+				currentOptim.addObserver(this);
+				new Thread(currentOptim).start();
 
-				currlabel.setText(getString(R.string.optimizing) + ' ' + optim.getExt() + " files");
+				currlabel.setText(getString(R.string.optimizing) + ' ' + currentOptim.getExt() + " files");
 			} else { // all done
 				currlabel.setText(R.string.done);
 				currentfile.setText(null);
@@ -89,11 +90,13 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	}
 
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onPause() {
+		super.onPause();
 
 		for(Optimizer optim : optimizers)
 			optim.abort();
+		if(currentOptim != null)
+			currentOptim.abort();
 	}
 
 	public static String sizeString(long len) {

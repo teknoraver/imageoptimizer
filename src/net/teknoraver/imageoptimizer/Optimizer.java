@@ -52,7 +52,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	@Override
 	public void run() {
 		App.debug("starting optimization on " + files.size() + " files");
-		while(!files.isEmpty()) {
+		while(run && !files.isEmpty()) {
 			List<String> sublist;
 			if(files.size() < SPLIT)
 				sublist = files;
