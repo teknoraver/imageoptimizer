@@ -41,7 +41,7 @@
             android:name="com.google.ads.AdActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
         <activity
-            android:name="net.teknoraver.imageoptimizer.OptimizerActivity"
+            android:name=".OptimizerActivity"
             android:configChanges="orientation|keyboard|screenSize"
             android:label="@string/title_activity_compress"
             android:parentActivityName=".Browser" >
