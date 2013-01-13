@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -63,15 +62,13 @@ class Sorter implements Comparator<Image> {
 	private static final int NAME = 0;
 	private static final int SIZE = 1;
 	private static final int DATE = 2;
-	private static final String ASC = "ascendent";
-	private static final String MODE = "mode";
 	private int mode;
 	private boolean asc;
 	private SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
 
 	Sorter() {
-		asc = pm.getBoolean(ASC, false);
-		mode = pm.getInt(MODE, DATE);
+		asc = pm.getBoolean(Settings.ASC, false);
+		mode = pm.getInt(Settings.MODE, DATE);
 	}
 
 	@Override
@@ -98,8 +95,8 @@ class Sorter implements Comparator<Image> {
 		asc = mode == newmode ? !asc : true;
 		mode = newmode;
 		Editor editor = pm.edit();
-		editor.putBoolean(ASC, asc);
-		editor.putInt(MODE, mode);
+		editor.putBoolean(Settings.ASC, asc);
+		editor.putInt(Settings.MODE, mode);
 		editor.commit();
 		return this;
 	}
@@ -119,12 +116,14 @@ class Sorter implements Comparator<Image> {
 
 public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
 	private static final String CPUINFO = "/proc/cpuinfo";
+
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
 	private Sorter sorter = new Sorter();
 	private Button go;
+	private SharedPreferences pm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -135,8 +134,12 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		go = (Button)findViewById(R.id.optimize);
 		go.setOnClickListener(this);
+
+		pm = PreferenceManager.getDefaultSharedPreferences(this);
+
 		try {
 			getFile("jpegoptim");
+			getFile("optipng");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
@@ -169,7 +172,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		File sdext = new File("/mnt/extSdCard/DCIM");
 		if(sdext.isDirectory())
 			scan(sdext);
-		handler.post(pdclose); 
+		handler.post(pdclose);
 	}
 
 	@Override
@@ -206,9 +209,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		if(pathname.getName().endsWith(".jpg"))
-			return true;
-		return false;
+		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && pathname.toString().endsWith(".png");
 	}
 
 	@Override
@@ -254,26 +256,36 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	@Override
 	public void onClick(View v) {
-		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
-		ArrayList<String> checked = new ArrayList<String>(list.getCount());
+		ArrayList<String> jpgs = new ArrayList<String>(list.getCount());
+		ArrayList<String> pngs = new ArrayList<String>(list.getCount());
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
-			if(row.compress)
-				checked.add(row.path);
+			if(row.compress) {
+				if(row.path.toString().endsWith(".jpg"))
+					jpgs.add(row.path);
+				else if(row.path.toString().endsWith(".png"))
+					pngs.add(row.path);
+			}
 		}
-		if(checked.isEmpty())
+		if(jpgs.isEmpty() && pngs.isEmpty())
 			return;
 
-		Jpegoptim jo = new Jpegoptim(
-			checked,
-			pm.getBoolean("lossy", true),
-			pm.getInt("jpegquality", 75),
-			pm.getBoolean("timestamp", true),
-			pm.getInt("threshold", 10));
+		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
+		if(pm.getBoolean(Settings.JPG, true)) {
+			int quality = -1;
+			if(pm.getBoolean(Settings.LOSSY, true))
+				quality = pm.getInt(Settings.JPEGQ, 75);
+			optimizers.add(new Jpegoptim(	jpgs,
+							quality,
+							pm.getBoolean(Settings.TIMESTAMP, true),
+							pm.getInt(Settings.THRESHOLD, 10)));
+		}
+		if(pm.getBoolean(Settings.PNG, true))
+			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
 
-		Intent comp = new Intent(this, Optimizer.class);
-		comp.putExtra(Optimizer.OPTIMIZER, jo);
-		startActivity(comp);
+		startActivity(new Intent(this, OptimizerActivity.class)
+			.putExtra(OptimizerActivity.OPTIMIZER, optimizers)
+		);
 	}
 
 	private void getFile(final String name) throws IOException {
@@ -401,7 +413,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) 
+	public View getView(int position, View convertView, ViewGroup parent)
 	{
 //		if(convertView == null) {
 			convertView = ((Activity)getContext()).getLayoutInflater().inflate(R.layout.listitem, null);
@@ -423,7 +435,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		TextView size = (TextView)convertView.findViewById(R.id.size);
 		long len = image.size;
-		size.setText(Optimizer.sizeString(len));
+		size.setText(OptimizerActivity.sizeString(len));
 
 		ImageView b = (ImageView)convertView.findViewById(R.id.grid_item_image);
 		int left = b.getPaddingLeft();
@@ -467,7 +479,7 @@ class ImageAdapter extends ArrayAdapter<Image>
 				return null;
 			}*/
 
-			App.debug("decoding " + image.path);
+			// App.debug("decoding " + image.path);
 
 			BitmapFactory.Options boundOpts = new BitmapFactory.Options();
 			boundOpts.inJustDecodeBounds = true;

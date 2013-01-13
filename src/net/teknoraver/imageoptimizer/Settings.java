@@ -28,6 +28,16 @@ import android.view.MenuItem;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class Settings extends PreferenceActivity {
+	static final String ASC = "ascendent";
+	static final String MODE = "mode";
+	static final String LOSSY = "lossy";
+	static final String JPG = "dojpeg";
+	static final String PNG = "dopng";
+	static final String JPEGQ = "jpegquality";
+	static final String TIMESTAMP = "timestamp";
+	static final String THRESHOLD = "threshold";
+	static final String PNGQ = "pngquality";
+
 	/**
 	 * Determines whether to always show the simplified settings UI, where
 	 * settings are presented in a single list. When false, settings are
@@ -74,6 +84,7 @@ public class Settings extends PreferenceActivity {
 	 * device configuration dictates that a simplified, single-pane UI
 	 * should be shown.
 	 */
+	@SuppressWarnings("deprecation")
 	private void setupSimplePreferencesScreen() {
 		if (!isSimplePreferences(this))
 			return;
@@ -97,12 +108,12 @@ public class Settings extends PreferenceActivity {
 		bindPreferenceSummaryToValue(findPreference("jpegquality"));
 		bindPreferenceSummaryToValue(findPreference("threshold"));
 
-/*		// PNG
+		// PNG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_png);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_png);
-		bindPreferenceSummaryToValue(findPreference("pngquality"));*/
+		bindPreferenceSummaryToValue(findPreference("pngquality"));
 	}
 
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
@@ -203,8 +214,8 @@ public class Settings extends PreferenceActivity {
 		}
 	}
 
-/*	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public class PngPreferenceFragment extends PreferenceFragment {
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	static public class PngPreferenceFragment extends PreferenceFragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
@@ -212,5 +223,5 @@ public class Settings extends PreferenceActivity {
 
 			bindPreferenceSummaryToValue(findPreference("pngquality"));
 		}
-	}*/
+	}
 }

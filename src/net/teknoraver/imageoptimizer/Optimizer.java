@@ -1,94 +1,83 @@
 package net.teknoraver.imageoptimizer;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
-import java.util.Observer;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.WindowManager;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+abstract class Optimizer extends Observable implements Serializable, Runnable {
+	private static final long serialVersionUID = 2968942827262809844L;
 
-public class Optimizer extends Activity implements Observer, Runnable {
+	protected static final int SPLIT = 100;
 
-	public static final String OPTIMIZER = "optim";
-	private Jpegoptim jo;
-	private String res[];
-	private Handler handler = new Handler();
-	private TextView currentfile;
-	private TextView origs;
-	private TextView news;
-	private TextView saved;
-	private ProgressBar progress;
-	private long origsize, newsize;
+	protected int quality;
+	protected ArrayList<String> files;
+	protected boolean preserve;
+	protected boolean run = true;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.optimizer);
+	static class Result {
+		String path;
+		long origsize;
+		long newsize;
+		boolean compressed;
+		boolean error;
 
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		jo = (Jpegoptim)getIntent().getSerializableExtra(OPTIMIZER);
+		public Result() {
+			error = true;
+		}
 
-		currentfile = (TextView)findViewById(R.id.currentfile);
-		progress = (ProgressBar)findViewById(R.id.progress);
-		origs = (TextView)findViewById(R.id.origsize);
-		news = (TextView)findViewById(R.id.newsize);
-		saved = (TextView)findViewById(R.id.saved);
+		public Result(String p, long o, long n, boolean c) {
+			path = p;
+			origsize = o;
+			newsize = n;
+			compressed = c;
+		}
 
-		progress.setMax(jo.count());
+		String getName() {
+			return path.substring(path.lastIndexOf('/') + 1);
+		}
+	}
 
-		jo.addObserver(this);
-		new Thread(jo).start();
+	Optimizer(ArrayList<String> f, int q, boolean p) {
+		quality = q;
+		files = f;
+		preserve = p;
 	}
 
 	@Override
-	public void update(Observable observable, Object data) {
-		if(data != null) {
-			res = (String[])data;
-			if(res[6].equals("error"))
-				return;
-			origsize += Integer.parseInt(res[3]);
-			if(res[6].equals("optimized"))
-				newsize += Integer.parseInt(res[4]);
-			else
-				newsize += Integer.parseInt(res[3]);
-		} else
-			res = null;
-		handler.post(this);
+	public boolean hasChanged() {
+		return true;
 	}
 
 	@Override
 	public void run() {
-		if(res != null)
-			currentfile.setText(" " + res[0].substring(res[0].lastIndexOf('/') + 1));
-		else {
-			((TextView)findViewById(R.id.currlabel)).setText(R.string.done);
-			currentfile.setText(null);
-			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		App.debug("starting optimization on " + files.size() + " files");
+		while(run && !files.isEmpty()) {
+			List<String> sublist;
+			if(files.size() < SPLIT)
+				sublist = files;
+			else
+				sublist = files.subList(0, SPLIT);
+
+			App.debug("optimization on " + sublist.size() + "/" + files.size());
+			compress(sublist);
+
+			sublist.clear();
 		}
-		progress.setProgress(progress.getProgress() + 1);
-		origs.setText(" " + sizeString(origsize));
-		news.setText(" " + sizeString(newsize));
-		if(origsize != 0)
-			saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
+		files = null;
+		notifyObservers(null);
 	}
 
-	@Override
-	protected void onStop() {
-		super.onStop();
+	protected abstract void compress(List<String> sublist);
 
-		jo.abort();
+	void abort() {
+		run = false;
 	}
 
-	public static String sizeString(long len) {
-		if(len < 1 << 10)
-			return len + " bytes";
-		else if(len < 1 << 20)
-			return ((int)(len / 10.24)) / 100.0 + " Kb";
-		else
-			return ((int)(len / 10485.76)) / 100.0 + " Mb";
+	int count() {
+		return files.size();
 	}
-	
+
+	abstract String getExt();
+	abstract String version();
 }

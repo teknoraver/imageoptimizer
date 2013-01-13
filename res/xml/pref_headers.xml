@@ -9,9 +9,9 @@
 	<header
 		android:fragment="net.teknoraver.imageoptimizer.Settings$JpegPreferenceFragment"
 		android:title="JPEG" />
-<!--
+
 	<header
 		android:fragment="net.teknoraver.imageoptimizer.Settings$PngPreferenceFragment"
 		android:title="PNG" />
--->
+
 </preference-headers>
