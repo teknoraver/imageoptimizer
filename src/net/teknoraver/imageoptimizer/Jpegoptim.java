@@ -50,6 +50,7 @@ class Jpegoptim extends Optimizer {
 			String line;
 			while(run && (line = stdout.readLine()) != null) {
 				try {
+					App.debug(line);
 					String res[] = line.split(",");
 					notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
 				} catch(RuntimeException r) {

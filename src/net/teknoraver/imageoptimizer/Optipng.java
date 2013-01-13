@@ -40,6 +40,7 @@ class Optipng extends Optimizer {
 			String line;
 			while(run && (line = stdout.readLine()) != null) {
 				try {
+					App.debug(line);
 					String res[] = line.split(",");
 					notifyObservers(new Result(res[0], Integer.parseInt(res[1]), Integer.parseInt(res[2]), res[4].equals("optimized")));
 				} catch(RuntimeException r) {

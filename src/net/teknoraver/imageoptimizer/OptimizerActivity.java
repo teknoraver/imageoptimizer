@@ -48,7 +48,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	public void update(Observable observable, Object data) {
 		if(data != null) {
 			res = (Optimizer.Result)data;
-			if(!res.compressed)
+			if(res.error)
 				return;
 			origsize += res.origsize;
 			if(res.compressed)
