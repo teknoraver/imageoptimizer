@@ -9,8 +9,6 @@ public final class App extends Application {
 
 	public App() {
 		a = this;
-//		if(BuildConfig.DEBUG)
-//			ExceptionHandler.register(this);
 	}
 
 /*	@Override
