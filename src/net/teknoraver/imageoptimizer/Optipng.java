@@ -33,6 +33,8 @@ class Optipng extends Optimizer {
 			args.add(BIN);
 			args.add("-csv");
 			args.add("-o" + quality);
+			if(preserve)
+				args.add("-preserve");
 			args.addAll(sublist);
 			App.debug("starting optipng on " + sublist.size() + " files");
 			Process optipng = Runtime.getRuntime().exec(args.toArray(new String[0]));
