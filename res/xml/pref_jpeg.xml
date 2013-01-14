@@ -11,7 +11,7 @@
 		android:defaultValue="true"
 		android:key="lossy"
 		android:title="@string/pref_title_lossy"
-		android:summary="@string/pref_description_lossy"
+		android:summary="@string/pref_title_lossy"
 		android:dependency="dojpeg" />
 
 	<net.teknoraver.seekbar.SeekBarPreference

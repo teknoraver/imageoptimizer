@@ -8,10 +8,10 @@
 
 	<header
 		android:fragment="net.teknoraver.imageoptimizer.Settings$JpegPreferenceFragment"
-		android:title="JPEG" />
+		android:title="@string/pref_header_jpeg" />
 
 	<header
 		android:fragment="net.teknoraver.imageoptimizer.Settings$PngPreferenceFragment"
-		android:title="PNG" />
+		android:title="@string/pref_header_png" />
 
 </preference-headers>

@@ -96,40 +96,40 @@ public class Settings extends PreferenceActivity {
 		// Add 'general' preferences.
 		PreferenceCategory fakeHeader;
 		addPreferencesFromResource(R.xml.pref_general);
-		bindPreferenceSummaryToValue(findPreference("timestamp"));
+		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_jpeg);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_jpeg);
-		bindPreferenceSummaryToValue(findPreference("dojpeg"));
-		bindPreferenceSummaryToValue(findPreference("lossy"));
-		bindPreferenceSummaryToValue(findPreference("jpegquality"));
-		bindPreferenceSummaryToValue(findPreference("threshold"));
+		bindPreferenceSummaryToValue(findPreference(JPG));
+		bindPreferenceSummaryToValue(findPreference(LOSSY));
+		bindPreferenceSummaryToValue(findPreference(JPEGQ));
+		bindPreferenceSummaryToValue(findPreference(THRESHOLD));
 
 		// PNG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_png);
 		getPreferenceScreen().addPreference(fakeHeader);
 		addPreferencesFromResource(R.xml.pref_png);
-		bindPreferenceSummaryToValue(findPreference("pngquality"));
+		bindPreferenceSummaryToValue(findPreference(PNGQ));
 	}
 
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			if (preference.getKey().equals("jpegquality"))
+			if (preference.getKey().equals(JPEGQ))
 				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary) + " " + value + "%");
-			else if (preference.getKey().equals("lossy"))
+			else if (preference.getKey().equals(LOSSY))
 				if((Boolean)value)
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossless));
-			else if (preference.getKey().equals("threshold"))
+			else if (preference.getKey().equals(THRESHOLD))
 				preference.setSummary(App.getContext().getString(R.string.threshold_summary) + " " + value + "%");
-			else if (preference.getKey().equals("pngquality"))
-				preference.setSummary("Compression level " + value);
+			else if (preference.getKey().equals(PNGQ))
+				preference.setSummary(App.getContext().getString(R.string.pngquality) + " " + value);
 
 			return true;
 		}
@@ -143,15 +143,15 @@ public class Settings extends PreferenceActivity {
 		// current value.
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
 
-		if(preference.getKey().equals("jpegquality"))
+		if(preference.getKey().equals(JPEGQ))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 75));
-		else if(preference.getKey().equals("lossy"))
+		else if(preference.getKey().equals(LOSSY))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
-		else if(preference.getKey().equals("threshold"))
+		else if(preference.getKey().equals(THRESHOLD))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 10));
-		else if(preference.getKey().equals("dopng"))
+		else if(preference.getKey().equals(PNG))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), true));
-		else if(preference.getKey().equals("pngquality"))
+		else if(preference.getKey().equals(PNGQ))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 7));
 	}
 
@@ -197,7 +197,7 @@ public class Settings extends PreferenceActivity {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_general);
 
-			bindPreferenceSummaryToValue(findPreference("timestamp"));
+			bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
 		}
 	}
 
@@ -208,9 +208,9 @@ public class Settings extends PreferenceActivity {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_jpeg);
 
-			bindPreferenceSummaryToValue(findPreference("lossy"));
-			bindPreferenceSummaryToValue(findPreference("jpegquality"));
-			bindPreferenceSummaryToValue(findPreference("threshold"));
+			bindPreferenceSummaryToValue(findPreference(LOSSY));
+			bindPreferenceSummaryToValue(findPreference(JPEGQ));
+			bindPreferenceSummaryToValue(findPreference(THRESHOLD));
 		}
 	}
 
@@ -221,7 +221,7 @@ public class Settings extends PreferenceActivity {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_png);
 
-			bindPreferenceSummaryToValue(findPreference("pngquality"));
+			bindPreferenceSummaryToValue(findPreference(PNGQ));
 		}
 	}
 }

@@ -19,6 +19,7 @@
 	<string name="saved">Saved space</string>
 	<string name="ioerror">Filesystem error</string>
 	<string name="noimages">No Images Found</string>
+	<string name="image">image</string>
     
 	<!-- ask for support -->
 	<string name="arch">Unsupported device</string>
