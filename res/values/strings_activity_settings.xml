@@ -2,6 +2,7 @@
 <resources>
 	<string name="title_activity_settings">Settings</string>
 	<string name="timestamp">Preserve files timestamp</string>
+	<string name="timestamp_summary">Not supported on all systems</string>
 	<string name="pref_header_general">General</string>
 	<string name="pref_title_lossy">Compress images</string>
 	<string name="pref_description_lossy">Compress images</string>
