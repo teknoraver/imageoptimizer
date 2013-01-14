@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -145,6 +146,12 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
 			finish();
 		}
+
+		/*startActivityForResult(new Intent(getBaseContext(), FileDialog.class)
+			.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
+			.putExtra(FileDialog.CAN_SELECT_DIR, true)
+			.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN)
+			.putExtra(FileDialog.ONLY_SELECT_DIR, true), 1);*/
 
 		startScan();
 	}

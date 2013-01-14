@@ -12,6 +12,7 @@
 	<string name="snone">Select none</string>
 	<string name="refresh">Refresh</string>
 	<string name="title_activity_compress">Image Optimization</string>
+	<string name="title_browse">Browse</string>
 	<string name="optimizing">Optimizing</string>
 	<string name="done">Done!</string>
 	<string name="origsize">Original size</string>
