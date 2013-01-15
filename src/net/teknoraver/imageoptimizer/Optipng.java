@@ -8,7 +8,7 @@ import java.util.List;
 
 /*
  * Optipng output sample is CSV format
- * 222039.png,1238,1238,0,skipped                                                                                                                               
+ * 222039.png,1238,1238,0,skipped
  * 091514.png,123786,120811,97,optimized
  *
  * 0	filename

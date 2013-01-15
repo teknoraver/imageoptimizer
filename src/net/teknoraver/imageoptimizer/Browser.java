@@ -306,25 +306,25 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				.setIcon(android.R.drawable.ic_dialog_email)
 				.create().show();
 		} else {
-	                final File file = new File(getFilesDir(), name);
-	                if (!file.exists())
-	                        try {
-	                                getFilesDir().mkdirs();
-	                                final InputStream in = getAssets().open(name + '/' + binary);
-	                                final FileOutputStream out = new FileOutputStream(file);
-	                                final byte[] buf = new byte[65536];
-	                                int len;
-	                                while ((len = in.read(buf)) > 0)
-	                                        out.write(buf, 0, len);
-	                                in.close();
-	                                out.close();
-	                                Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
-	                        } catch (final IOException ex) {
-	                                ex.printStackTrace();
-	                                finish();
-	                                return;
-	                        }
-			}
+			final File file = new File(getFilesDir(), name);
+			if (!file.exists())
+				try {
+					getFilesDir().mkdirs();
+					final InputStream in = getAssets().open(name + '/' + binary);
+					final FileOutputStream out = new FileOutputStream(file);
+					final byte[] buf = new byte[65536];
+					int len;
+					while ((len = in.read(buf)) > 0)
+						out.write(buf, 0, len);
+					in.close();
+					out.close();
+					Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
+				} catch (final IOException ex) {
+					ex.printStackTrace();
+					finish();
+					return;
+				}
+		}
         }
 
 	private String detectCpu() throws IOException {
