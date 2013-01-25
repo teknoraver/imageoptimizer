@@ -13,7 +13,7 @@
 	<string name="refresh">Refresh</string>
 	<string name="title_activity_compress">Image Optimization</string>
 	<string name="title_browse">Browse</string>
-	<string name="optimizing">Optimizing</string>
+	<string name="optimizing">Optimizing %s files</string>
 	<string name="done">Done!</string>
 	<string name="origsize">Original size</string>
 	<string name="newsize">Optimized size</string>

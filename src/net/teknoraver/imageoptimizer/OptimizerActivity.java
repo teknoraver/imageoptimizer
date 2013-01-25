@@ -80,7 +80,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 				currentOptim.addObserver(this);
 				new Thread(currentOptim).start();
 
-				currlabel.setText(getString(R.string.optimizing) + ' ' + currentOptim.getExt() + " files");
+				currlabel.setText(getString(R.string.optimizing, currentOptim.getExt()));
 			} else { // all done
 				currlabel.setText(R.string.done);
 				currentfile.setText(null);

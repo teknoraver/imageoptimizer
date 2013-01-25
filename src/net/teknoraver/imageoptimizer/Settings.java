@@ -120,16 +120,16 @@ public class Settings extends PreferenceActivity {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			if (preference.getKey().equals(JPEGQ))
-				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary) + " " + value + "%");
+				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary, value));
 			else if (preference.getKey().equals(LOSSY))
 				if((Boolean)value)
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossless));
 			else if (preference.getKey().equals(THRESHOLD))
-				preference.setSummary(App.getContext().getString(R.string.threshold_summary) + " " + value + "%");
+				preference.setSummary(App.getContext().getString(R.string.threshold_summary, value));
 			else if (preference.getKey().equals(PNGQ))
-				preference.setSummary(App.getContext().getString(R.string.pngquality) + " " + value);
+				preference.setSummary(App.getContext().getString(R.string.pngquality, value));
 
 			return true;
 		}
