@@ -8,11 +8,13 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
@@ -97,6 +99,12 @@ public class Settings extends PreferenceActivity {
 		PreferenceCategory fakeHeader;
 		addPreferencesFromResource(R.xml.pref_general);
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
+
+		PreferenceScreen path = (PreferenceScreen)findPreference("search_path");
+		CheckBoxPreference cb = new CheckBoxPreference(this);
+		cb.setTitle("/mnt/sdcard");
+		cb.setChecked(true);
+		path.addPreference(cb);
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);

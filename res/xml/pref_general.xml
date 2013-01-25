@@ -5,5 +5,7 @@
 		android:key="timestamp"
 		android:title="@string/timestamp"
 		android:summary="@string/timestamp_summary"/>
-
+		<PreferenceScreen android:title="Image search path" android:key="search_path">
+			<Preference android:title="add path" android:key="add_path"/>
+		</PreferenceScreen>
 </PreferenceScreen>
