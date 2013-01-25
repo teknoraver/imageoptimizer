@@ -10,14 +10,14 @@
 	<string name="pref_title_lossy">Compress images</string>
 	<string name="pref_title_lossless">Optimize only images</string>
 	<string name="title_quality">Quality level</string>
-	<string name="jpegquality_summary">Set JPEG compression to</string>
+	<string name="jpegquality_summary">Set JPEG compression to %d%%</string>
 	<string name="threshold">Threshold</string>
-	<string name="threshold_summary">Skip file if compression saves less than</string>
+	<string name="threshold_summary">Skip file if compression saves less than %d%%</string>
 	<string name="pref_header_jpeg">JPEG Options</string>
 	<string name="dojpeg">Optimize JPEG files</string>
 
 	<!-- PNG -->
 	<string name="pref_header_png">PNG Options</string>
 	<string name="dopng">Optimize PNG files</string>
-	<string name="pngquality">Optimization level</string>
+	<string name="pngquality">Optimization level %d</string>
 </resources>
