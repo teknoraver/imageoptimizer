@@ -167,12 +167,12 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
 			}
 		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
+		for(String path : PathSelector.getPaths()) {
+			File dir = new File(path);
+			if(dir.isDirectory())
+				scan(new File(path));
+		}
 
-		// FIX for GS3, I can't use the new API as aren't available in API level 7!
-		File sdext = new File("/mnt/extSdCard/DCIM");
-		if(sdext.isDirectory())
-			scan(sdext);
 		handler.post(pdclose);
 	}
 

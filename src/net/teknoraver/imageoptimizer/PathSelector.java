@@ -24,7 +24,7 @@ public class PathSelector extends ListActivity {
 	private ArrayList<String> paths = new ArrayList<String>();
 	private static final int ADDPATH = 1;
 	private static final String[] builtins = new String[]{
-		"/mnt/sdcard/DCIM",
+		"/mnt/sdcard/DCIM", // Environment.getExternalStorageDirectory()
 		"/mnt/sdcard/Pictures/Screenshots",
 		"/mnt/extSdCard/DCIM"};
 
@@ -34,15 +34,7 @@ public class PathSelector extends ListActivity {
 
 		setContentView(R.layout.pathselector);
 
-		SharedPreferences values =  getSharedPreferences(PATHS, MODE_PRIVATE);
-		for(Object o : values.getAll().values())
-			paths.add(o.toString());
-
-		if(paths.isEmpty()) {
-			for(String path : builtins)
-				if(new File(path).isDirectory())
-					paths.add(path);
-		}
+		paths = getPaths();
 
 		setListAdapter(new PathAdapter(this, paths));
 	}
@@ -81,6 +73,22 @@ public class PathSelector extends ListActivity {
 		}
 		paths.add(data.getStringExtra(FileDialog.RESULT_PATH));
 		((PathAdapter)getListAdapter()).notifyDataSetChanged();
+	}
+
+	static ArrayList<String> getPaths()
+	{
+		ArrayList<String> p = new ArrayList<String>();
+		SharedPreferences values =  App.getContext().getSharedPreferences(PATHS, MODE_PRIVATE);
+		for(Object o : values.getAll().values())
+			p.add(o.toString());
+
+		if(p.isEmpty()) {
+			for(String path : builtins)
+				if(new File(path).isDirectory())
+					p.add(path);
+		}
+
+		return p;
 	}
 }
 
