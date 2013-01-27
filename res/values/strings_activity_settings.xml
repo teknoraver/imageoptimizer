@@ -5,6 +5,7 @@
 	<string name="timestamp">Preserve files timestamp</string>
 	<string name="timestamp_summary">Not supported on all systems</string>
 	<string name="pref_header_general">General</string>
+	<string name="add_path">Add path</string>
 
 	<!-- JPEG -->
 	<string name="pref_title_lossy">Compress images</string>

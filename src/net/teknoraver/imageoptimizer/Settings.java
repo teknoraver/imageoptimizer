@@ -4,12 +4,14 @@ import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -29,7 +31,7 @@ import android.view.MenuItem;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class Settings extends PreferenceActivity {
+public class Settings extends PreferenceActivity implements OnPreferenceClickListener {
 	static final String ASC = "ascendent";
 	static final String MODE = "mode";
 	static final String LOSSY = "lossy";
@@ -100,11 +102,8 @@ public class Settings extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.pref_general);
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
 
-		PreferenceScreen path = (PreferenceScreen)findPreference("search_path");
-		CheckBoxPreference cb = new CheckBoxPreference(this);
-		cb.setTitle("/mnt/sdcard");
-		cb.setChecked(true);
-		path.addPreference(cb);
+		Preference path = findPreference("search_path");
+		path.setOnPreferenceClickListener(this);
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
@@ -231,5 +230,11 @@ public class Settings extends PreferenceActivity {
 
 			bindPreferenceSummaryToValue(findPreference(PNGQ));
 		}
+	}
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		startActivity(new Intent(this, PathSelector.class));
+		return false;
 	}
 }

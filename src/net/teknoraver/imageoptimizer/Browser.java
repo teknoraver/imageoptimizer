@@ -147,12 +147,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			finish();
 		}
 
-		/*startActivityForResult(new Intent(getBaseContext(), FileDialog.class)
-			.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
-			.putExtra(FileDialog.CAN_SELECT_DIR, true)
-			.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN)
-			.putExtra(FileDialog.ONLY_SELECT_DIR, true), 1);*/
-
 		startScan();
 	}
 
