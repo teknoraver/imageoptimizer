@@ -29,7 +29,7 @@ import android.view.MenuItem;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class Settings extends PreferenceActivity implements OnPreferenceClickListener {
+public class Settings extends PreferenceActivity {
 	static final String ASC = "ascendent";
 	static final String MODE = "mode";
 	static final String LOSSY = "lossy";
@@ -101,7 +101,7 @@ public class Settings extends PreferenceActivity implements OnPreferenceClickLis
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
 
 		Preference path = findPreference("search_path");
-		path.setOnPreferenceClickListener(this);
+		path.setOnPreferenceClickListener(new Starter(this));
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
@@ -203,6 +203,9 @@ public class Settings extends PreferenceActivity implements OnPreferenceClickLis
 			addPreferencesFromResource(R.xml.pref_general);
 
 			bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
+
+			Preference path = findPreference("search_path");
+			path.setOnPreferenceClickListener(new Starter(null));
 		}
 	}
 
@@ -229,10 +232,24 @@ public class Settings extends PreferenceActivity implements OnPreferenceClickLis
 			bindPreferenceSummaryToValue(findPreference(PNGQ));
 		}
 	}
+}
+
+class Starter implements OnPreferenceClickListener
+{
+	private Context context;
+
+	public Starter(Context c) {
+		context = c;
+	}
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		startActivity(new Intent(this, PathSelector.class));
+		Intent intent = new Intent(App.getContext(), PathSelector.class);
+		if(context == null) {
+			context = App.getContext();
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		}
+		context.startActivity(intent);
 		return false;
 	}
 }
