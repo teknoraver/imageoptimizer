@@ -18,15 +18,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PathSelector extends ListActivity {
 	private static final String PATHS = "paths";
 	private ArrayList<String> paths = new ArrayList<String>();
 	private static final int ADDPATH = 1;
-	private static final String[] builtins = new String[]{
-		"/mnt/sdcard/DCIM", // Environment.getExternalStorageDirectory()
-		"/mnt/sdcard/Pictures/Screenshots",
-		"/mnt/extSdCard/DCIM"};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +68,14 @@ public class PathSelector extends ListActivity {
 			super.onActivityResult(requestCode, resultCode, data);
 			return;
 		}
-		paths.add(data.getStringExtra(FileDialog.RESULT_PATH));
-		((PathAdapter)getListAdapter()).notifyDataSetChanged();
+		String newPath = data.getStringExtra(FileDialog.RESULT_PATH);
+		if(newPath == null)
+			return;
+		if(!paths.contains(newPath)) {
+			paths.add(newPath);
+			((PathAdapter)getListAdapter()).notifyDataSetChanged();
+		} else
+			Toast.makeText(this, R.string.alreadypath, Toast.LENGTH_SHORT).show();
 	}
 
 	static ArrayList<String> getPaths()
@@ -83,6 +86,11 @@ public class PathSelector extends ListActivity {
 			p.add(o.toString());
 
 		if(p.isEmpty()) {
+			final String[] builtins = new String[] {
+					Environment.getExternalStorageDirectory() + "/DCIM",
+					Environment.getExternalStorageDirectory() + "/Pictures/Screenshots",
+					Environment.getExternalStorageDirectory() + "/WhatsApp/Media/WhatsApp Images",
+					"/mnt/extSdCard/DCIM"};
 			for(String path : builtins)
 				if(new File(path).isDirectory())
 					p.add(path);

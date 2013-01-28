@@ -6,6 +6,9 @@
 	<string name="timestamp_summary">Not supported on all systems</string>
 	<string name="pref_header_general">General</string>
 	<string name="add_path">Add path</string>
+	<string name="alreadypath">Directory already in search path</string>
+	<string name="emptypaths">Search path is empty\nwill use the default ones</string>
+	<string name="searchpath">Images search path</string>
 
 	<!-- JPEG -->
 	<string name="pref_title_lossy">Compress images</string>

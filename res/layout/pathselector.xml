@@ -27,6 +27,6 @@
 		android:layout_height="fill_parent"
 		android:layout_above="@id/add"
 		android:gravity="center"
-		android:text="NIENTEEEEEEEE"
+		android:text="@string/emptypaths"
 		android:textAppearance="?android:attr/textAppearanceLarge" />
 </RelativeLayout>
