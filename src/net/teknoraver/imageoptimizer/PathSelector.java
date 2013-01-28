@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import com.lamerman.FileDialog;
-import com.lamerman.SelectionMode;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -58,7 +57,7 @@ public class PathSelector extends ListActivity {
 		startActivityForResult(new Intent(getBaseContext(), FileDialog.class)
 			.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
 			.putExtra(FileDialog.CAN_SELECT_DIR, true)
-			.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN)
+			.putExtra(FileDialog.SELECTION_MODE, FileDialog.MODE_OPEN)
 			/*.putExtra(FileDialog.ONLY_SELECT_DIR, true)*/, ADDPATH);
 	}
 
