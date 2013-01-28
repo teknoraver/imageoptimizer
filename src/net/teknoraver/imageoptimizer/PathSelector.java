@@ -112,6 +112,7 @@ class PathAdapter extends ArrayAdapter<String>
 			path = new TextView(getContext());
 
 		path.setText(getItem(position));
+		path.setTextSize(20);
 		path.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_delete, 0);
 
 		return path;
