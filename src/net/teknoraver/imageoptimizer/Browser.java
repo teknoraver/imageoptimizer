@@ -145,11 +145,10 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
 			finish();
 		}
-
-		startScan();
 	}
 
 	private void startScan() {
+		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
 		new Thread(this).start();
 	}
@@ -179,6 +178,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	protected void onResume() {
 		super.onResume();
 
+		startScan();
 		refresh();
 	}
 
