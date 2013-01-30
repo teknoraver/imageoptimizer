@@ -23,5 +23,6 @@
 	<!-- PNG -->
 	<string name="pref_header_png">PNG Options</string>
 	<string name="dopng">Optimize PNG files</string>
-	<string name="pngquality">Optimization level %d</string>
+	<string name="pngquality">Optimization level</string>
+	<string name="pngquality_summary">Set optimization level to %d</string>
 </resources>

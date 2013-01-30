@@ -134,7 +134,7 @@ public class Settings extends PreferenceActivity {
 			else if (preference.getKey().equals(THRESHOLD))
 				preference.setSummary(App.getContext().getString(R.string.threshold_summary, value));
 			else if (preference.getKey().equals(PNGQ))
-				preference.setSummary(App.getContext().getString(R.string.pngquality, value));
+				preference.setSummary(App.getContext().getString(R.string.pngquality_summary, value));
 
 			return true;
 		}
