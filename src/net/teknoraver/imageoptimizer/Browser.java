@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -209,8 +210,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().endsWith(".jpg") ||
-			pm.getBoolean(Settings.PNG, true) && pathname.toString().endsWith(".png");
+		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().toLowerCase(Locale.getDefault()).endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && pathname.toString().toLowerCase(Locale.getDefault()).endsWith(".png");
 	}
 
 	@Override

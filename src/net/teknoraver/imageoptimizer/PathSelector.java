@@ -58,6 +58,7 @@ public class PathSelector extends ListActivity {
 			.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
 			.putExtra(FileDialog.CAN_SELECT_DIR, true)
 			.putExtra(FileDialog.SELECTION_MODE, FileDialog.MODE_OPEN)
+			.putExtra(FileDialog.FORMAT_FILTER, new String[]{".jpg", ".png"})
 			/*.putExtra(FileDialog.ONLY_SELECT_DIR, true)*/, ADDPATH);
 	}
 
