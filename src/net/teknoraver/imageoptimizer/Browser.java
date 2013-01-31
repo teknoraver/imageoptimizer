@@ -262,9 +262,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
 			if(row.compress) {
-				if(row.path.toString().endsWith(".jpg"))
+				if(row.path.toString().toLowerCase(Locale.US).endsWith(".jpg"))
 					jpgs.add(row.path);
-				else if(row.path.toString().endsWith(".png"))
+				else if(row.path.toString().toLowerCase(Locale.US).endsWith(".png"))
 					pngs.add(row.path);
 			}
 		}
