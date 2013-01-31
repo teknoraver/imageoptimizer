@@ -210,8 +210,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().toLowerCase(Locale.getDefault()).endsWith(".jpg") ||
-			pm.getBoolean(Settings.PNG, true) && pathname.toString().toLowerCase(Locale.getDefault()).endsWith(".png");
+		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".png");
 	}
 
 	@Override
