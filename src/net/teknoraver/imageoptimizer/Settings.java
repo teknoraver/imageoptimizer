@@ -4,11 +4,13 @@ import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -98,6 +100,9 @@ public class Settings extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.pref_general);
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
 
+		Preference path = findPreference("search_path");
+		path.setOnPreferenceClickListener(new Starter(this));
+
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
 		fakeHeader.setTitle(R.string.pref_header_jpeg);
@@ -129,7 +134,7 @@ public class Settings extends PreferenceActivity {
 			else if (preference.getKey().equals(THRESHOLD))
 				preference.setSummary(App.getContext().getString(R.string.threshold_summary, value));
 			else if (preference.getKey().equals(PNGQ))
-				preference.setSummary(App.getContext().getString(R.string.pngquality, value));
+				preference.setSummary(App.getContext().getString(R.string.pngquality_summary, value));
 
 			return true;
 		}
@@ -198,6 +203,9 @@ public class Settings extends PreferenceActivity {
 			addPreferencesFromResource(R.xml.pref_general);
 
 			bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
+
+			Preference path = findPreference("search_path");
+			path.setOnPreferenceClickListener(new Starter(null));
 		}
 	}
 
@@ -223,5 +231,25 @@ public class Settings extends PreferenceActivity {
 
 			bindPreferenceSummaryToValue(findPreference(PNGQ));
 		}
+	}
+}
+
+class Starter implements OnPreferenceClickListener
+{
+	private Context context;
+
+	public Starter(Context c) {
+		context = c;
+	}
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		Intent intent = new Intent(App.getContext(), PathSelector.class);
+		if(context == null) {
+			context = App.getContext();
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		}
+		context.startActivity(intent);
+		return false;
 	}
 }

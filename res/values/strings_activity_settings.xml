@@ -5,6 +5,10 @@
 	<string name="timestamp">Preserve files timestamp</string>
 	<string name="timestamp_summary">Not supported on all systems</string>
 	<string name="pref_header_general">General</string>
+	<string name="add_path">Add path</string>
+	<string name="alreadypath">Directory already in search path</string>
+	<string name="emptypaths">Search path is empty\nwill use the default ones</string>
+	<string name="searchpath">Images search path</string>
 
 	<!-- JPEG -->
 	<string name="pref_title_lossy">Compress images</string>
@@ -19,5 +23,6 @@
 	<!-- PNG -->
 	<string name="pref_header_png">PNG Options</string>
 	<string name="dopng">Optimize PNG files</string>
-	<string name="pngquality">Optimization level %d</string>
+	<string name="pngquality">Optimization level</string>
+	<string name="pngquality_summary">Set optimization level to %d</string>
 </resources>

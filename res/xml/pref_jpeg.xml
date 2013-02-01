@@ -20,7 +20,6 @@
 		android:defaultValue="75"
 		android:max="100"
 		robobunny:min="1"
-		robobunny:unitsLeft=""
 		robobunny:unitsRight="%"
 		android:dependency="lossy"/>
 
@@ -28,6 +27,7 @@
 		android:defaultValue="10"
 		android:max="100"
 		robobunny:min="1"
+		robobunny:unitsRight="%"
 		android:key="threshold"
 		android:title="@string/threshold"
 		android:dependency="lossy"/>

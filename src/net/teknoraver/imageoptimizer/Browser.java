@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -24,7 +26,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.Display;
@@ -145,11 +146,10 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
 			finish();
 		}
-
-		startScan();
 	}
 
 	private void startScan() {
+		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
 		new Thread(this).start();
 	}
@@ -166,12 +166,12 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
 			}
 		};
-		scan(new File(Environment.getExternalStorageDirectory() + "/DCIM"));
+		for(String path : PathSelector.getPaths()) {
+			File dir = new File(path);
+			if(dir.isDirectory())
+				scan(new File(path));
+		}
 
-		// FIX for GS3, I can't use the new API as aren't available in API level 7!
-		File sdext = new File("/mnt/extSdCard/DCIM");
-		if(sdext.isDirectory())
-			scan(sdext);
 		handler.post(pdclose);
 	}
 
@@ -179,6 +179,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	protected void onResume() {
 		super.onResume();
 
+		startScan();
 		refresh();
 	}
 
@@ -209,8 +210,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			return false;
 		if(pathname.isDirectory())
 			return true;
-		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().endsWith(".jpg") ||
-			pm.getBoolean(Settings.PNG, true) && pathname.toString().endsWith(".png");
+		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".png");
 	}
 
 	@Override
@@ -261,9 +262,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
 			if(row.compress) {
-				if(row.path.toString().endsWith(".jpg"))
+				if(row.path.toString().toLowerCase(Locale.US).endsWith(".jpg"))
 					jpgs.add(row.path);
-				else if(row.path.toString().endsWith(".png"))
+				else if(row.path.toString().toLowerCase(Locale.US).endsWith(".png"))
 					pngs.add(row.path);
 			}
 		}
@@ -299,25 +300,25 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				.setIcon(android.R.drawable.ic_dialog_email)
 				.create().show();
 		} else {
-	                final File file = new File(getFilesDir(), name);
-	                if (!file.exists())
-	                        try {
-	                                getFilesDir().mkdirs();
-	                                final InputStream in = getAssets().open(name + '/' + binary);
-	                                final FileOutputStream out = new FileOutputStream(file);
-	                                final byte[] buf = new byte[65536];
-	                                int len;
-	                                while ((len = in.read(buf)) > 0)
-	                                        out.write(buf, 0, len);
-	                                in.close();
-	                                out.close();
-	                                Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
-	                        } catch (final IOException ex) {
-	                                ex.printStackTrace();
-	                                finish();
-	                                return;
-	                        }
-			}
+			final File file = new File(getFilesDir(), name);
+			if (!file.exists())
+				try {
+					getFilesDir().mkdirs();
+					final InputStream in = getAssets().open(name + '/' + binary);
+					final FileOutputStream out = new FileOutputStream(file);
+					final byte[] buf = new byte[65536];
+					int len;
+					while ((len = in.read(buf)) > 0)
+						out.write(buf, 0, len);
+					in.close();
+					out.close();
+					Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
+				} catch (final IOException ex) {
+					ex.printStackTrace();
+					finish();
+					return;
+				}
+		}
         }
 
 	private String detectCpu() throws IOException {

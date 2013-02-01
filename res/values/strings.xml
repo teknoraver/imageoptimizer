@@ -7,11 +7,11 @@
 	<string name="optimize">Optimize</string>
 	<string name="scanning_title">Scanning</string>
 	<string name="scanning_txt">Scanning for picture files</string>
-	<string name="compress">Compressing</string>
 	<string name="sall">Select all</string>
 	<string name="snone">Select none</string>
 	<string name="refresh">Refresh</string>
 	<string name="title_activity_compress">Image Optimization</string>
+	<string name="title_browse">Browse</string>
 	<string name="optimizing">Optimizing %s files</string>
 	<string name="done">Done!</string>
 	<string name="origsize">Original size</string>
@@ -20,7 +20,7 @@
 	<string name="ioerror">Filesystem error</string>
 	<string name="noimages">No Images Found</string>
 	<string name="image">image</string>
-    
+ 
 	<!-- ask for support -->
 	<string name="arch">Unsupported device</string>
 	<string name="sendmail">Your device is unsupported by Image Optimizer.\nWould you like to ask the developer to add support for your device?</string>
