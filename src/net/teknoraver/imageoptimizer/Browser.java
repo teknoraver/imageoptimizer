@@ -149,6 +149,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	}
 
 	private void startScan() {
+		go.setEnabled(false);
 		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
 		new Thread(this).start();
