@@ -5,8 +5,13 @@ import java.util.Observable;
 import java.util.Observer;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,6 +40,18 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		optimizers = (ArrayList<Optimizer>)getIntent().getSerializableExtra(OPTIMIZER);
 
+		// called via Intent
+		if(optimizers == null) {
+			ArrayList<String> files = new ArrayList<String>(); 
+			if(Intent.ACTION_SEND.equals(getIntent().getAction()))
+				files.add(getRealPathFromURI((Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM)));
+			else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()))
+				if(getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
+					for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
+						files.add(getRealPathFromURI((Uri)uri));
+			optimizers = Browser.createOptimizers(files);
+		}
+
 		currlabel = (TextView)findViewById(R.id.currlabel);
 		currentfile = (TextView)findViewById(R.id.currentfile);
 		progress = (ProgressBar)findViewById(R.id.progress);
@@ -43,6 +60,13 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		saved = (TextView)findViewById(R.id.saved);
 
 		update(null, null);
+	}
+
+	public String getRealPathFromURI(Uri contentUri) {
+		Cursor cursor = managedQuery(contentUri, new String[]{ MediaStore.Images.Media.DATA }, null, null, null);
+		int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		return cursor.getString(column_index);
 	}
 
 	@Override

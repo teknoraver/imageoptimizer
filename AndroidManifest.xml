@@ -51,10 +51,17 @@
 			android:name=".OptimizerActivity"
 			android:configChanges="orientation|keyboard|screenSize"
 			android:label="@string/title_activity_compress"
-			android:parentActivityName=".Browser" >
+			android:parentActivityName=".Browser">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".Browser" />
+			<intent-filter android:icon="@drawable/ic_launcher" android:label="@string/optimize">
+				<action android:name="android.intent.action.SEND" />
+				<action android:name="android.intent.action.SEND_MULTIPLE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="image/jpeg" />
+				<data android:mimeType="image/png" />
+			</intent-filter>
 		</activity>
 	</application>
 

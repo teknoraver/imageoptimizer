@@ -256,24 +256,21 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		return super.onContextItemSelected(item);
 	}
 
-	@Override
-	public void onClick(View v) {
-		ArrayList<String> jpgs = new ArrayList<String>(list.getCount());
-		ArrayList<String> pngs = new ArrayList<String>(list.getCount());
-		for(int i = 0; i < list.getCount(); i++) {
-			Image row = (Image)list.getItemAtPosition(i);
-			if(row.compress) {
-				if(row.path.toString().toLowerCase(Locale.US).endsWith(".jpg"))
-					jpgs.add(row.path);
-				else if(row.path.toString().toLowerCase(Locale.US).endsWith(".png"))
-					pngs.add(row.path);
-			}
+	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
+		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
+		ArrayList<String> jpgs = new ArrayList<String>(files.size());
+		ArrayList<String> pngs = new ArrayList<String>(files.size());
+		for(String file : files) {
+			if(file.toLowerCase(Locale.US).endsWith(".jpg"))
+				jpgs.add(file);
+			else if(file.toLowerCase(Locale.US).endsWith(".png"))
+				pngs.add(file);
 		}
 		if(jpgs.isEmpty() && pngs.isEmpty())
-			return;
+			return null;
 
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
-		if(pm.getBoolean(Settings.JPG, true)) {
+		if(!jpgs.isEmpty()) {
 			int quality = -1;
 			if(pm.getBoolean(Settings.LOSSY, true))
 				quality = pm.getInt(Settings.JPEGQ, 75);
@@ -282,12 +279,26 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 							pm.getBoolean(Settings.TIMESTAMP, true),
 							pm.getInt(Settings.THRESHOLD, 10)));
 		}
-		if(pm.getBoolean(Settings.PNG, true))
+		if(!pngs.isEmpty())
 			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
+		return optimizers;
+	}
 
-		startActivity(new Intent(this, OptimizerActivity.class)
-			.putExtra(OptimizerActivity.OPTIMIZER, optimizers)
-		);
+	@Override
+	public void onClick(View v) {
+		ArrayList<String> files = new ArrayList<String>(list.getCount());
+		for(int i = 0; i < list.getCount(); i++) {
+			Image row = (Image)list.getItemAtPosition(i);
+			if(row.compress)
+				files.add(row.path);
+		}
+
+
+		ArrayList<Optimizer> optimizers = createOptimizers(files);
+
+		if(optimizers != null)
+			startActivity(new Intent(this, OptimizerActivity.class)
+				.putExtra(OptimizerActivity.OPTIMIZER, optimizers));
 	}
 
 	private void getFile(final String name) throws IOException {
