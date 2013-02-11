@@ -32,6 +32,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	private long origsize, newsize;
 	private TextView currlabel;
 	private Optimizer currentOptim;
+	private boolean refreshed;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -112,6 +113,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 				currlabel.setText(R.string.done);
 				currentfile.setText(null);
 				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				mediaRefresh();
 			}
 		}
 	}
@@ -124,6 +126,17 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			optim.abort();
 		if(currentOptim != null)
 			currentOptim.abort();
+
+		mediaRefresh();
+	}
+
+	private void mediaRefresh() {
+		if(!refreshed) {
+			App.debug("refreshing paths");
+			for(String path : PathSelector.getPaths())
+				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + path)));
+			refreshed = true;
+		}
 	}
 
 	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
@@ -147,7 +160,8 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			optimizers.add(new Jpegoptim(	jpgs,
 							quality,
 							pm.getBoolean(Settings.TIMESTAMP, true),
-							pm.getInt(Settings.THRESHOLD, 10)));
+							pm.getInt(Settings.THRESHOLD, 10),
+							pm.getBoolean(Settings.EXIF, false)));
 		}
 		if(!pngs.isEmpty())
 			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
