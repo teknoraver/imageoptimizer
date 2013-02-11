@@ -20,7 +20,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class OptimizerActivity extends Activity implements Observer, Runnable {
-
 	public static final String OPTIMIZER = "optim";
 	private ArrayList<Optimizer> optimizers;
 	private Optimizer.Result res;
@@ -65,10 +64,12 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	}
 
 	public String getRealPathFromURI(Uri contentUri) {
-		Cursor cursor = managedQuery(contentUri, new String[]{ MediaStore.Images.Media.DATA }, null, null, null);
-		int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-		cursor.moveToFirst();
-		return cursor.getString(column_index);
+		String res = null;
+		Cursor cursor = getContentResolver().query(contentUri, new String[]{MediaStore.Images.Media.DATA}, null, null, null);
+		if(cursor.moveToFirst())
+			res = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+		cursor.close();
+		return res;
 	}
 
 	@Override
