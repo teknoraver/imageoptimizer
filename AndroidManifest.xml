@@ -43,10 +43,12 @@
 		<activity
 			android:name="com.lamerman.FileDialog"
 			android:label="@string/title_browse"
-			android:configChanges="orientation|keyboard|screenSize"/>
+			android:configChanges="orientation|keyboard|screenSize"
+			android:parentActivityName=".PathSelector"/>
 		<activity
 			android:name=".PathSelector"
-			android:configChanges="orientation|keyboard|screenSize"/>
+			android:configChanges="orientation|keyboard|screenSize"
+			android:parentActivityName=".Settings"/>
 		<activity
 			android:name=".OptimizerActivity"
 			android:configChanges="orientation|keyboard|screenSize"
