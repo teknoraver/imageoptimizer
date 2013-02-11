@@ -32,4 +32,10 @@
 		android:title="@string/threshold"
 		android:dependency="lossy"/>
 
+	<CheckBoxPreference
+		android:defaultValue="false"
+		android:key="exif"
+		android:title="@string/exif"
+		android:summary="@string/exif_no"
+		android:dependency="dojpeg" />
 </PreferenceScreen>
