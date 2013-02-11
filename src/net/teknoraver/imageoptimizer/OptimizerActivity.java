@@ -1,16 +1,19 @@
 package net.teknoraver.imageoptimizer;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -42,14 +45,13 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 
 		// called via Intent
 		if(optimizers == null) {
-			ArrayList<String> files = new ArrayList<String>(); 
+			ArrayList<String> files = new ArrayList<String>();
 			if(Intent.ACTION_SEND.equals(getIntent().getAction()))
 				files.add(getRealPathFromURI((Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM)));
-			else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()))
-				if(getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
-					for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
-						files.add(getRealPathFromURI((Uri)uri));
-			optimizers = Browser.createOptimizers(files);
+			else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()) && getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
+				for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
+					files.add(getRealPathFromURI((Uri)uri));
+			optimizers = createOptimizers(files);
 		}
 
 		currlabel = (TextView)findViewById(R.id.currlabel);
@@ -121,6 +123,34 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			optim.abort();
 		if(currentOptim != null)
 			currentOptim.abort();
+	}
+
+	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
+		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
+		ArrayList<String> jpgs = new ArrayList<String>(files.size());
+		ArrayList<String> pngs = new ArrayList<String>(files.size());
+		for(String file : files) {
+			if(file.toLowerCase(Locale.US).endsWith(".jpg"))
+				jpgs.add(file);
+			else if(file.toLowerCase(Locale.US).endsWith(".png"))
+				pngs.add(file);
+		}
+		if(jpgs.isEmpty() && pngs.isEmpty())
+			return null;
+	
+		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
+		if(!jpgs.isEmpty()) {
+			int quality = -1;
+			if(pm.getBoolean(Settings.LOSSY, true))
+				quality = pm.getInt(Settings.JPEGQ, 75);
+			optimizers.add(new Jpegoptim(	jpgs,
+							quality,
+							pm.getBoolean(Settings.TIMESTAMP, true),
+							pm.getInt(Settings.THRESHOLD, 10)));
+		}
+		if(!pngs.isEmpty())
+			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
+		return optimizers;
 	}
 
 	public static String sizeString(long len) {

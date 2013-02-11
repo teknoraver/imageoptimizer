@@ -256,34 +256,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		return super.onContextItemSelected(item);
 	}
 
-	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
-		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
-		ArrayList<String> jpgs = new ArrayList<String>(files.size());
-		ArrayList<String> pngs = new ArrayList<String>(files.size());
-		for(String file : files) {
-			if(file.toLowerCase(Locale.US).endsWith(".jpg"))
-				jpgs.add(file);
-			else if(file.toLowerCase(Locale.US).endsWith(".png"))
-				pngs.add(file);
-		}
-		if(jpgs.isEmpty() && pngs.isEmpty())
-			return null;
-
-		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
-		if(!jpgs.isEmpty()) {
-			int quality = -1;
-			if(pm.getBoolean(Settings.LOSSY, true))
-				quality = pm.getInt(Settings.JPEGQ, 75);
-			optimizers.add(new Jpegoptim(	jpgs,
-							quality,
-							pm.getBoolean(Settings.TIMESTAMP, true),
-							pm.getInt(Settings.THRESHOLD, 10)));
-		}
-		if(!pngs.isEmpty())
-			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
-		return optimizers;
-	}
-
 	@Override
 	public void onClick(View v) {
 		ArrayList<String> files = new ArrayList<String>(list.getCount());
@@ -294,7 +266,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		}
 
 
-		ArrayList<Optimizer> optimizers = createOptimizers(files);
+		ArrayList<Optimizer> optimizers = OptimizerActivity.createOptimizers(files);
 
 		if(optimizers != null)
 			startActivity(new Intent(this, OptimizerActivity.class)
