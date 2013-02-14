@@ -305,27 +305,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		}
         }
 
-	private String detectCpu() throws IOException {
-		if(Build.CPU_ABI.startsWith("arm")) {
-			BufferedReader cpuiinfo = new BufferedReader(new FileReader(CPUINFO), 1024);
-			String line;
-			while((line = cpuiinfo.readLine()) != null)
-				if(line.startsWith("Features"))
-					break;
-			cpuiinfo.close();
-
-			if(line == null)
-				return null;
-
-			if(line.contains("neon"))
-				return "arm/neon";
-			if(line.contains("vfp"))
-				return "arm/vfp";
-			if(line.contains("thumb"))
-				return "arm/soft";
-
-			return null;
-		}
+	private String detectCpu() {
+		if(Build.CPU_ABI.startsWith("arm"))
+			return "arm";
 		if(Build.CPU_ABI.startsWith("x86"))
 			return "x86";
 		if(Build.CPU_ABI.startsWith("mips"))
