@@ -1,10 +1,8 @@
 package net.teknoraver.imageoptimizer;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -20,6 +18,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -117,6 +116,7 @@ class Sorter implements Comparator<Image> {
 
 public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
 	private static final String CPUINFO = "/proc/cpuinfo";
+	private static final String LASTVER = "last_version";
 
 	private final Handler handler = new Handler();
 	private ProgressDialog pd;
@@ -138,9 +138,23 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		pm = PreferenceManager.getDefaultSharedPreferences(this);
 
+		boolean update = true;
 		try {
-			getFile("jpegoptim");
-			getFile("optipng");
+			final int ver = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+			if(pm.getInt(LASTVER, 0) == ver)
+				update = false;
+			else {
+				App.debug("Updating binaries from " + pm.getInt(LASTVER, 0) + " to " + ver);
+				Editor ed = pm.edit();
+				ed.putInt(LASTVER, ver);
+				ed.commit();
+			}
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			getFile("jpegoptim", update);
+			getFile("optipng", update);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
@@ -273,7 +287,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				.putExtra(OptimizerActivity.OPTIMIZER, optimizers));
 	}
 
-	private void getFile(final String name) throws IOException {
+	private void getFile(final String name, boolean update) throws IOException {
 		String binary = detectCpu();
 		if(binary == null) {
 			new AlertDialog.Builder(this)
@@ -285,8 +299,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				.create().show();
 		} else {
 			final File file = new File(getFilesDir(), name);
-			if (!file.exists())
+			if (update || !file.exists())
 				try {
+					App.debug("extracting " + name);
 					getFilesDir().mkdirs();
 					final InputStream in = getAssets().open(name + '/' + binary);
 					final FileOutputStream out = new FileOutputStream(file);
