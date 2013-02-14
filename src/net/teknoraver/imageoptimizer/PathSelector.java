@@ -89,7 +89,6 @@ public class PathSelector extends ListActivity {
 			final String[] builtins = {
 					Environment.getExternalStorageDirectory() + "/DCIM",
 					Environment.getExternalStorageDirectory() + "/Pictures/Screenshots",
-					Environment.getExternalStorageDirectory() + "/WhatsApp/Media/WhatsApp Images",
 					"/mnt/extSdCard/DCIM"};
 			for(String path : builtins)
 				if(new File(path).isDirectory())
