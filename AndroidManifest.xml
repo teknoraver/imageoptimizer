@@ -47,6 +47,7 @@
 			android:parentActivityName=".PathSelector"/>
 		<activity
 			android:name=".PathSelector"
+			android:label="@string/searchpath"
 			android:configChanges="orientation|keyboard|screenSize"
 			android:parentActivityName=".Settings"/>
 		<activity

@@ -45,13 +45,20 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 
 		// called via Intent
 		if(optimizers == null) {
+			App.debug("Intent: " + getIntent().getAction());
 			ArrayList<String> files = new ArrayList<String>();
-			if(Intent.ACTION_SEND.equals(getIntent().getAction()))
-				files.add(getRealPathFromURI((Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM)));
-			else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()) && getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
-				for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
-					files.add(getRealPathFromURI((Uri)uri));
+			if(Intent.ACTION_SEND.equals(getIntent().getAction())) {
+				String file = getRealPathFromURI((Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM));
+				if(file != null)
+					files.add(file);
+			} else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()) && getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
+				for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM)) {
+					String file = getRealPathFromURI((Uri)uri);
+					if(file != null)
+						files.add(file);
+				}
 			optimizers = createOptimizers(files);
+			App.debug("optimizers: " + optimizers);
 		}
 
 		currlabel = (TextView)findViewById(R.id.currlabel);
@@ -67,6 +74,8 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	public String getRealPathFromURI(Uri contentUri) {
 		String res = null;
 		Cursor cursor = getContentResolver().query(contentUri, new String[]{MediaStore.Images.Media.DATA}, null, null, null);
+		if(cursor == null)
+			return null;
 		if(cursor.moveToFirst())
 			res = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
 		cursor.close();
@@ -149,8 +158,6 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			else if(file.toLowerCase(Locale.US).endsWith(".png"))
 				pngs.add(file);
 		}
-		if(jpgs.isEmpty() && pngs.isEmpty())
-			return null;
 	
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
 		if(!jpgs.isEmpty()) {
