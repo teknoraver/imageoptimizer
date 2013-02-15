@@ -25,15 +25,13 @@ class Jpegoptim extends Optimizer {
 	private static final long serialVersionUID = -2673614600679067178L;
 	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
 	private boolean compress;
-	private boolean exif;
 	private int threshold;
 
-	Jpegoptim(ArrayList<String> f, int q, boolean p, int t, boolean e) {
+	Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
 		super(f, q, p);
 		if(quality >= 0)
 			compress = true;
 		threshold = t;
-		exif = e;
 	}
 
 	@Override
@@ -47,8 +45,6 @@ class Jpegoptim extends Optimizer {
 				args.add("-m" + quality);
 			if(preserve)
 				args.add("-p");
-			if(exif)
-				args.add("--strip-exif");
 			args.addAll(sublist);
 			App.debug("starting jpegoptim on " + sublist.size() + " files");
 			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));

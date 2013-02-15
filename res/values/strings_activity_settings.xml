@@ -19,9 +19,6 @@
 	<string name="threshold_summary">Skip file if compression saves less than %d%%</string>
 	<string name="pref_header_jpeg">JPEG Options</string>
 	<string name="dojpeg">Optimize JPEG files</string>
-	<string name="exif">Strip EXIF tags</string>
-	<string name="exif_yes">Images will lose timestamp, location, rotation, etc.</string>
-	<string name="exif_no">Tags are preserved</string>
 
 	<!-- PNG -->
 	<string name="pref_header_png">PNG Options</string>

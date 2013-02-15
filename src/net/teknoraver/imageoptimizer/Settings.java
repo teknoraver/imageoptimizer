@@ -36,7 +36,6 @@ public class Settings extends PreferenceActivity {
 	static final String JPG = "dojpeg";
 	static final String PNG = "dopng";
 	static final String JPEGQ = "jpegquality";
-	static final String EXIF = "exif";
 	static final String TIMESTAMP = "timestamp";
 	static final String THRESHOLD = "threshold";
 	static final String PNGQ = "pngquality";
@@ -113,7 +112,6 @@ public class Settings extends PreferenceActivity {
 		bindPreferenceSummaryToValue(findPreference(LOSSY));
 		bindPreferenceSummaryToValue(findPreference(JPEGQ));
 		bindPreferenceSummaryToValue(findPreference(THRESHOLD));
-		bindPreferenceSummaryToValue(findPreference(EXIF));
 
 		// PNG
 		fakeHeader = new PreferenceCategory(this);
@@ -133,11 +131,6 @@ public class Settings extends PreferenceActivity {
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossy));
 				else
 					preference.setSummary(App.getContext().getString(R.string.pref_title_lossless));
-			else if (preference.getKey().equals(EXIF))
-				if((Boolean)value)
-					preference.setSummary(App.getContext().getString(R.string.exif_yes));
-				else
-					preference.setSummary(App.getContext().getString(R.string.exif_no));
 			else if (preference.getKey().equals(THRESHOLD))
 				preference.setSummary(App.getContext().getString(R.string.threshold_summary, value));
 			else if (preference.getKey().equals(PNGQ))
@@ -158,8 +151,6 @@ public class Settings extends PreferenceActivity {
 		if(preference.getKey().equals(JPEGQ))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 75));
 		else if(preference.getKey().equals(LOSSY))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
-		else if(preference.getKey().equals(EXIF))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
 		else if(preference.getKey().equals(THRESHOLD))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 10));
@@ -228,7 +219,6 @@ public class Settings extends PreferenceActivity {
 			bindPreferenceSummaryToValue(findPreference(LOSSY));
 			bindPreferenceSummaryToValue(findPreference(JPEGQ));
 			bindPreferenceSummaryToValue(findPreference(THRESHOLD));
-			bindPreferenceSummaryToValue(findPreference(EXIF));
 		}
 	}
 

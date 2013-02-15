@@ -160,8 +160,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			optimizers.add(new Jpegoptim(	jpgs,
 							quality,
 							pm.getBoolean(Settings.TIMESTAMP, true),
-							pm.getInt(Settings.THRESHOLD, 10),
-							pm.getBoolean(Settings.EXIF, false)));
+							pm.getInt(Settings.THRESHOLD, 10)));
 		}
 		if(!pngs.isEmpty())
 			optimizers.add(new Optipng(pngs, pm.getInt(Settings.PNGQ, 1), pm.getBoolean(Settings.TIMESTAMP, true)));
