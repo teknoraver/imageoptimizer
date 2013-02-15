@@ -32,7 +32,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	private long origsize, newsize;
 	private TextView currlabel;
 	private Optimizer currentOptim;
-	private boolean refreshed;
+	private boolean refresh;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -97,9 +97,10 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			}
 
 			origsize += res.origsize;
-			if(res.compressed)
+			if(res.compressed) {
+				refresh = true;
 				newsize += res.newsize;
-			else
+			} else
 				newsize += res.origsize;
 
 			currentfile.setText(res.getName());
@@ -140,11 +141,11 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	}
 
 	private void mediaRefresh() {
-		if(!refreshed) {
+		if(refresh) {
 			App.debug("refreshing paths");
 			for(String path : PathSelector.getPaths())
 				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + path)));
-			refreshed = true;
+			refresh = false;
 		}
 	}
 
