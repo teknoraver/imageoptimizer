@@ -419,16 +419,15 @@ class ImageAdapter extends ArrayAdapter<Image>
 		long len = image.size;
 		size.setText(OptimizerActivity.sizeString(len));
 
-		ImageView b = (ImageView)convertView.findViewById(R.id.grid_item_image);
-		int left = b.getPaddingLeft();
-		int top = b.getPaddingTop();
-		int right = b.getPaddingRight();
-		int bottom = b.getPaddingBottom();
+		int left = updatingImage.getPaddingLeft();
+		int top = updatingImage.getPaddingTop();
+		int right = updatingImage.getPaddingRight();
+		int bottom = updatingImage.getPaddingBottom();
 		if(image.compress)
-			b.setBackgroundResource(R.drawable.borderh);
+			updatingImage.setBackgroundResource(R.drawable.borderh);
 		else
-			b.setBackgroundResource(R.drawable.border);
-		b.setPadding(left, top, right, bottom);
+			updatingImage.setBackgroundResource(R.drawable.border);
+		updatingImage.setPadding(left, top, right, bottom);
 
 		return convertView;
 	}
