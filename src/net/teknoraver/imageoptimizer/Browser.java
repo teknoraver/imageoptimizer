@@ -102,7 +102,7 @@ class Sorter implements Comparator<Image> {
 	}
 
 	private int id2mode(int newmode) {
-		switch(mode) {
+		switch(newmode) {
 		case R.id.sortby_name:
 			return NAME;
 		case R.id.sortby_size:
