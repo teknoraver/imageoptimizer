@@ -15,7 +15,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 /**
@@ -62,16 +61,6 @@ public class Settings extends PreferenceActivity {
 	private void setupActionBar() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
 			getActionBar().setDisplayHomeAsUpEnabled(true);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			NavUtils.navigateUpFromSameTask(this);
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
