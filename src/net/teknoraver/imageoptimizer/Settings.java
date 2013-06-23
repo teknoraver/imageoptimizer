@@ -2,19 +2,25 @@ package net.teknoraver.imageoptimizer;
 
 import java.util.List;
 
+import com.lamerman.FileDialog;
+
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -37,6 +43,8 @@ public class Settings extends PreferenceActivity {
 	static final String TIMESTAMP = "timestamp";
 	static final String THRESHOLD = "threshold";
 	static final String PNGQ = "pngquality";
+	static final String OUT = "savepath";
+	static final String SEARCH = "search_path";
 
 	/**
 	 * Determines whether to always show the simplified settings UI, where
@@ -87,9 +95,10 @@ public class Settings extends PreferenceActivity {
 		PreferenceCategory fakeHeader;
 		addPreferencesFromResource(R.xml.pref_general);
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
+		bindPreferenceSummaryToValue(findPreference(OUT));
 
-		Preference path = findPreference("search_path");
-		path.setOnPreferenceClickListener(new Starter(this));
+		findPreference(SEARCH).setOnPreferenceClickListener(new Starter(this));
+		findPreference(OUT).setOnPreferenceClickListener(new DirBrowser(this));
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
@@ -112,7 +121,9 @@ public class Settings extends PreferenceActivity {
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			if (preference.getKey().equals(JPEGQ))
+			if (preference.getKey().equals(OUT))
+				preference.setSummary(value.toString());
+			else if (preference.getKey().equals(JPEGQ))
 				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary, value));
 			else if (preference.getKey().equals(LOSSY))
 				if((Boolean)value)
@@ -137,15 +148,31 @@ public class Settings extends PreferenceActivity {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
 
 		if(preference.getKey().equals(JPEGQ))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 75));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(JPEGQ, 75));
+		else if(preference.getKey().equals(OUT))
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(OUT, ""));
 		else if(preference.getKey().equals(LOSSY))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), false));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(LOSSY, false));
 		else if(preference.getKey().equals(THRESHOLD))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 10));
-		else if(preference.getKey().equals(PNG))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(preference.getKey(), true));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(THRESHOLD, 10));
 		else if(preference.getKey().equals(PNGQ))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(preference.getKey(), 7));
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(PNGQ, 7));
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode != DirBrowser.ADDPATH) {
+			super.onActivityResult(requestCode, resultCode, data);
+			return;
+		}
+		String newPath = data.getStringExtra(FileDialog.RESULT_PATH);
+		if(newPath == null)
+			return;
+		PreferenceManager.getDefaultSharedPreferences(this)
+			.edit()
+			.putString(OUT, newPath)
+			.commit();
+		findPreference(OUT).setSummary(newPath);
 	}
 
 	/** {@inheritDoc} */
@@ -191,9 +218,10 @@ public class Settings extends PreferenceActivity {
 			addPreferencesFromResource(R.xml.pref_general);
 
 			bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
+			bindPreferenceSummaryToValue(findPreference(OUT));
 
-			Preference path = findPreference("search_path");
-			path.setOnPreferenceClickListener(new Starter(null));
+			findPreference("search_path").setOnPreferenceClickListener(new Starter(null));
+			findPreference(OUT).setOnPreferenceClickListener(new DirBrowser(null));
 		}
 	}
 
@@ -238,6 +266,31 @@ class Starter implements OnPreferenceClickListener
 			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		}
 		context.startActivity(intent);
+		return false;
+	}
+}
+
+class DirBrowser implements OnPreferenceClickListener
+{
+	static final int ADDPATH = 1;
+	private Activity activity;
+
+	public DirBrowser(Activity c) {
+		activity = c;
+	}
+
+	@Override
+	public boolean onPreferenceClick(Preference preference) {
+		Intent intent = new Intent(App.getContext(), FileDialog.class);
+/*		if(activity == null) {
+			activity = App.getContext();
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		}*/
+		intent	.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
+			.putExtra(FileDialog.CAN_SELECT_DIR, true)
+			.putExtra(FileDialog.SELECTION_MODE, FileDialog.MODE_OPEN)
+			.putExtra(FileDialog.FORMAT_FILTER, new String[]{".jpg", ".png"});
+		activity.startActivityForResult(intent, ADDPATH);
 		return false;
 	}
 }

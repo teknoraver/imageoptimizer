@@ -279,7 +279,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				files.add(row.path);
 		}
 
-
 		ArrayList<Optimizer> optimizers = OptimizerActivity.createOptimizers(files);
 
 		if(optimizers != null)

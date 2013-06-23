@@ -27,8 +27,8 @@ class Jpegoptim extends Optimizer {
 	private boolean compress;
 	private int threshold;
 
-	Jpegoptim(ArrayList<String> f, int q, boolean p, int t) {
-		super(f, q, p);
+	Jpegoptim(ArrayList<String> f, int q, boolean p, int t, String o) {
+		super(f, q, p, o);
 		if(quality >= 0)
 			compress = true;
 		threshold = t;
@@ -45,6 +45,8 @@ class Jpegoptim extends Optimizer {
 				args.add("-m" + quality);
 			if(preserve)
 				args.add("-p");
+			if(outdir != null)
+				args.add("-d" + outdir);
 			args.addAll(sublist);
 			App.debug("starting jpegoptim on " + sublist.size() + " files");
 			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));

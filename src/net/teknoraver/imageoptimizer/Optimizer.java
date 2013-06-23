@@ -14,6 +14,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected ArrayList<String> files;
 	protected boolean preserve;
 	protected boolean run = true;
+	protected String outdir;
 
 	static class Result {
 		String path;
@@ -38,10 +39,11 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 	}
 
-	Optimizer(ArrayList<String> f, int q, boolean p) {
+	Optimizer(ArrayList<String> f, int q, boolean p, String o) {
 		quality = q;
 		files = f;
 		preserve = p;
+		outdir = o;
 	}
 
 	@Override
