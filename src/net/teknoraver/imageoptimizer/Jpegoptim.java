@@ -46,7 +46,7 @@ class Jpegoptim extends Optimizer {
 			if(preserve)
 				args.add("-p");
 			if(outdir != null)
-				args.add("-d" + outdir);
+				args.add("-od" + outdir);
 			args.addAll(sublist);
 			App.debug("starting jpegoptim on " + sublist.size() + " files");
 			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));

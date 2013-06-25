@@ -36,6 +36,7 @@ class Optipng extends Optimizer {
 			if(preserve)
 				args.add("-preserve");
 			if(outdir != null) {
+				args.add("-clobber");
 				args.add("-dir");
 				args.add(outdir);
 			}

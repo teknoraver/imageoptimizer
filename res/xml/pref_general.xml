@@ -5,6 +5,6 @@
 		android:title="@string/timestamp"
 		android:summary="@string/timestamp_summary"/>
 	<Preference android:title="@string/searchpath" android:key="search_path"/>
-	<CheckBoxPreference android:title="@string/overwrite" android:key="overwrite" android:defaultValue="true"/>
-	<Preference android:title="@string/savepath" android:key="savepath" android:dependency="overwrite"/>
+	<CheckBoxPreference android:title="@string/destdir" android:key="destdir" android:defaultValue="true"/>
+	<Preference android:title="@string/savepath" android:key="savepath" android:dependency="destdir"/>
 </PreferenceScreen>
