@@ -159,23 +159,29 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 			else if(file.toLowerCase(Locale.US).endsWith(".png"))
 				pngs.add(file);
 		}
-	
+
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
+		String destdir = null;
+		if(pm.getBoolean(Settings.DEST, false))
+			destdir = pm.getString(Settings.OUT, null);
 		if(!jpgs.isEmpty()) {
 			int quality = -1;
 			if(pm.getBoolean(Settings.LOSSY, true))
 				quality = pm.getInt(Settings.JPEGQ, 75);
-			optimizers.add(new Jpegoptim(	jpgs,
-							quality,
-							pm.getBoolean(Settings.TIMESTAMP, true),
-							pm.getInt(Settings.THRESHOLD, 10),
-							pm.getString(Settings.OUT, null)));
+			optimizers.add(new Jpegoptim(
+				jpgs,
+				quality,
+				pm.getBoolean(Settings.TIMESTAMP, true),
+				pm.getInt(Settings.THRESHOLD, 10),
+				destdir));
 		}
 		if(!pngs.isEmpty())
-			optimizers.add(	new Optipng(pngs,
-					pm.getInt(Settings.PNGQ, 1),
-					pm.getBoolean(Settings.TIMESTAMP, true),
-					pm.getString(Settings.OUT, null)));
+			optimizers.add(new Optipng(
+				pngs,
+				pm.getInt(Settings.PNGQ, 1),
+				pm.getBoolean(Settings.TIMESTAMP, true),
+				destdir));
+
 		return optimizers;
 	}
 
@@ -187,5 +193,5 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 		else
 			return ((int)(len / 10485.76)) / 100.0 + " Mb";
 	}
-	
+
 }

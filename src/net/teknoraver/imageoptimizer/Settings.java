@@ -43,6 +43,7 @@ public class Settings extends PreferenceActivity {
 	static final String TIMESTAMP = "timestamp";
 	static final String THRESHOLD = "threshold";
 	static final String PNGQ = "pngquality";
+	static final String DEST = "destdir";
 	static final String OUT = "savepath";
 	static final String SEARCH = "search_path";
 
