@@ -89,7 +89,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	}
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		if(res != null) {
 			if(res.error) {
 				App.debug("error optimizing: " + res.path);
