@@ -1,8 +1,10 @@
 package net.teknoraver.imageoptimizer;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 
 abstract class Optimizer extends Observable implements Serializable, Runnable {
@@ -15,6 +17,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected boolean preserve;
 	protected boolean run = true;
 	protected String outdir;
+	protected String params[];
 
 	static class Result {
 		String path;
@@ -54,23 +57,40 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	@Override
 	public void run() {
 		App.debug("starting optimization on " + files.size() + " files");
-		while(run && !files.isEmpty()) {
-			List<String> sublist;
-			if(files.size() < SPLIT)
-				sublist = files;
-			else
-				sublist = files.subList(0, SPLIT);
-
-			App.debug("optimization on " + sublist.size() + "/" + files.size());
-			compress(sublist);
-
-			sublist.clear();
+		for(String s: files) {
+			if(!run)
+				break;
+			App.debug("optimizing " + s);
+			compress(s);
 		}
+		files.clear();
 		files = null;
 		notifyObservers(null);
 	}
 
-	protected abstract void compress(List<String> sublist);
+	protected void compress(String file) {
+		try {
+			params[params.length - 1] = file;
+			App.debug("starting optipng on " + file);
+			Process optimizer = Runtime.getRuntime().exec(params);
+			BufferedReader stdout = new BufferedReader(new InputStreamReader(optimizer.getInputStream()), 1024);
+			try {
+				optimizer.waitFor();
+				String line = stdout.readLine();
+//				App.debug(line);
+				parseOutput(line);
+			} catch(Exception e) {
+				e.printStackTrace();
+				notifyObservers(new Result());
+			}
+			stdout.close();
+			optimizer.destroy();
+		} catch(IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+
+	protected abstract void parseOutput(String string);
 
 	void abort() {
 		run = false;

@@ -1,11 +1,8 @@
 package net.teknoraver.imageoptimizer;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
 
 /*
  * Jpegoptim output sample is CSV format
@@ -32,43 +29,29 @@ class Jpegoptim extends Optimizer {
 		if(quality >= 0)
 			compress = true;
 		threshold = t;
+
+		ArrayList<String> args = new ArrayList<String>();
+		args.add(BIN);
+		args.add("-b");
+		args.add("-T" + threshold);
+		if(compress)
+			args.add("-m" + quality);
+		if(preserve)
+			args.add("-p");
+		if(outdir != null)
+			args.add("-od" + outdir);
+
+		params = new String[args.size() + 1];
+		args.toArray(params);
 	}
 
 	@Override
-	public void compress(List<String> sublist) {
-		try {
-			ArrayList<String> args = new ArrayList<String>(sublist.size() + 5);
-			args.add(BIN);
-			args.add("-b");
-			args.add("-T" + threshold);
-			if(compress)
-				args.add("-m" + quality);
-			if(preserve)
-				args.add("-p");
-			if(outdir != null)
-				args.add("-od" + outdir);
-			args.addAll(sublist);
-			App.debug("starting jpegoptim on " + sublist.size() + " files");
-			Process jpegoptim = Runtime.getRuntime().exec(args.toArray(new String[0]));
-			BufferedReader stdout = new BufferedReader(new InputStreamReader(jpegoptim.getInputStream()), 1024);
-			String line;
-			while(run && (line = stdout.readLine()) != null) {
-				try {
-//					App.debug(line);
-					String res[] = line.split(",");
-					if(res[6].equals("error"))
-						notifyObservers(new Result());
-					else
-						notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
-				} catch(RuntimeException r) {
-					notifyObservers(new Result());
-				}
-			}
-			stdout.close();
-			jpegoptim.destroy();
-		} catch(IOException ioe) {
-			ioe.printStackTrace();
-		}
+	protected void parseOutput(String line) {
+		String res[] = line.split(",");
+		if(res[6].equals("error"))
+			notifyObservers(new Result());
+		else
+			notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
 	}
 
 	@Override

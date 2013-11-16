@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,10 +20,9 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class OptimizerActivity extends Activity implements Observer, Runnable {
+public class OptimizerActivity extends Activity implements Observer {
 	public static final String OPTIMIZER = "optim";
 	private ArrayList<Optimizer> optimizers;
-	private Optimizer.Result res;
 	private Handler handler = new Handler();
 	private TextView currentfile;
 	private TextView origs;
@@ -32,7 +32,7 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	private long origsize, newsize;
 	private TextView currlabel;
 	private Optimizer currentOptim;
-	private boolean refresh;
+	private ArrayList<String> compressed = new ArrayList<String>();
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -84,46 +84,53 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 
 	@Override
 	public void update(Observable observable, Object data) {
-		res = (Optimizer.Result)data;
-		handler.post(this);
+		handler.post(new Updater((Optimizer.Result)data));
 	}
 
-	@Override
-	public synchronized void run() {
-		if(res != null) {
-			if(res.error) {
-				App.debug("error optimizing: " + res.path);
-				return;
-			}
+	private class Updater implements Runnable {
+		private Optimizer.Result res;
 
-			origsize += res.origsize;
-			if(res.compressed) {
-				refresh = true;
-				newsize += res.newsize;
-			} else
-				newsize += res.origsize;
+		Updater(Optimizer.Result r) {
+			res = r;
+		}
 
-			currentfile.setText(res.getName());
-			progress.setProgress(progress.getProgress() + 1);
-			origs.setText(" " + sizeString(origsize));
-			news.setText(" " + sizeString(newsize));
-			if(origsize != 0)
-				saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
-		} else {
-			if(!optimizers.isEmpty()) {
-				currentOptim = optimizers.remove(0);
-				progress.setMax(currentOptim.count());
-				progress.setProgress(0);
-
-				currentOptim.addObserver(this);
-				new Thread(currentOptim).start();
-
-				currlabel.setText(getString(R.string.optimizing, currentOptim.getExt()));
-			} else { // all done
-				currlabel.setText(R.string.done);
-				currentfile.setText(null);
-				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-				mediaRefresh();
+		@Override
+		public void run() {
+			if(res != null) {
+				if(res.error) {
+					App.debug("error optimizing: " + res.path);
+					return;
+				}
+	
+				origsize += res.origsize;
+				if(res.compressed) {
+					newsize += res.newsize;
+					compressed.add(res.getName());
+				} else
+					newsize += res.origsize;
+	
+				currentfile.setText(res.getName());
+				progress.setProgress(progress.getProgress() + 1);
+				origs.setText(" " + sizeString(origsize));
+				news.setText(" " + sizeString(newsize));
+				if(origsize != 0)
+					saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
+			} else {
+				if(!optimizers.isEmpty()) {
+					currentOptim = optimizers.remove(0);
+					progress.setMax(currentOptim.count());
+					progress.setProgress(0);
+	
+					currentOptim.addObserver(OptimizerActivity.this);
+					new Thread(currentOptim).start();
+	
+					currlabel.setText(getString(R.string.optimizing, currentOptim.getExt()));
+				} else { // all done
+					currlabel.setText(R.string.done);
+					currentfile.setText(null);
+					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+					mediaRefresh();
+				}
 			}
 		}
 	}
@@ -141,12 +148,9 @@ public class OptimizerActivity extends Activity implements Observer, Runnable {
 	}
 
 	private void mediaRefresh() {
-		if(refresh) {
-			App.debug("refreshing paths");
-			for(String path : PathSelector.getPaths())
-				sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + path)));
-			refresh = false;
-		}
+		App.debug("refreshing paths");
+		if(!compressed.isEmpty())
+			MediaScannerConnection.scanFile(this, compressed.toArray(new String[0]), null, null);
 	}
 
 	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
