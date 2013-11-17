@@ -1,6 +1,7 @@
 package net.teknoraver.imageoptimizer;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 /*
  * Optipng output sample is CSV format
@@ -18,7 +19,7 @@ class Optipng extends Optimizer {
 	private static final long serialVersionUID = 3211055437537470542L;
 	private static final String BIN = App.getContext().getFilesDir() + "/optipng";
 
-	Optipng(ArrayList<String> f, int q, boolean p, String o) {
+	Optipng(Vector<String> f, int q, boolean p, String o) {
 		super(f, q, p, o);
 
 		ArrayList<String> args = new ArrayList<String>();

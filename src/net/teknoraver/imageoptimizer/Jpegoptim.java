@@ -3,6 +3,7 @@ package net.teknoraver.imageoptimizer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Vector;
 
 /*
  * Jpegoptim output sample is CSV format
@@ -24,7 +25,7 @@ class Jpegoptim extends Optimizer {
 	private boolean compress;
 	private int threshold;
 
-	Jpegoptim(ArrayList<String> f, int q, boolean p, int t, String o) {
+	Jpegoptim(Vector<String> f, int q, boolean p, int t, String o) {
 		super(f, q, p, o);
 		if(quality >= 0)
 			compress = true;

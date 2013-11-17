@@ -4,20 +4,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Observable;
+import java.util.Vector;
 
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
 
-	protected static final int SPLIT = 100;
+	static final int CPU = Runtime.getRuntime().availableProcessors();
 
 	protected int quality;
-	protected ArrayList<String> files;
+	protected Vector<String> files;
 	protected boolean preserve;
 	protected boolean run = true;
 	protected String outdir;
 	protected String params[];
+	private int count;
 
 	static class Result {
 		String path;
@@ -42,11 +43,12 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 	}
 
-	Optimizer(ArrayList<String> f, int q, boolean p, String o) {
+	Optimizer(Vector<String> f, int q, boolean p, String o) {
 		quality = q;
 		files = f;
 		preserve = p;
 		outdir = o;
+		count = files.size();
 	}
 
 	@Override
@@ -57,36 +59,51 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	@Override
 	public void run() {
 		App.debug("starting optimization on " + files.size() + " files");
-		for(String s: files) {
-			if(!run)
-				break;
-			App.debug("optimizing " + s);
-			compress(s);
+		Thread t[] = new Thread[CPU];
+
+		for(int i = 0; i < CPU; i++) {
+			t[i] = new Thread(new Run(), "" + i);
+			t[i].start();
 		}
+
+		for(int i = 0; i < CPU; i++)
+			try {
+				t[i].join();
+			} catch (InterruptedException e) { }
+
 		files.clear();
 		files = null;
 		notifyObservers(null);
 	}
 
-	protected void compress(String file) {
-		try {
-			params[params.length - 1] = file;
-			App.debug("starting optipng on " + file);
-			Process optimizer = Runtime.getRuntime().exec(params);
-			BufferedReader stdout = new BufferedReader(new InputStreamReader(optimizer.getInputStream()), 1024);
-			try {
-				optimizer.waitFor();
-				String line = stdout.readLine();
-//				App.debug(line);
-				parseOutput(line);
-			} catch(Exception e) {
-				e.printStackTrace();
-				notifyObservers(new Result());
+	private class Run implements Runnable {
+		@Override
+		public void run() {
+			while(!files.isEmpty()) {
+				if(!run)
+					break;
+				String file = files.remove(0);
+				App.debug("optimizer " + (Thread.currentThread().getName()) + " " + file);
+				try {
+					params[params.length - 1] = file;
+					Process optimizer = Runtime.getRuntime().exec(params);
+					BufferedReader stdout = new BufferedReader(new InputStreamReader(optimizer.getInputStream()), 1024);
+					try {
+						optimizer.waitFor();
+						String line = stdout.readLine();
+//						App.debug(line);
+						parseOutput(line);
+					} catch(Exception e) {
+						e.printStackTrace();
+						notifyObservers(new Result());
+					}
+					stdout.close();
+					optimizer.destroy();
+				} catch(IOException ioe) {
+					ioe.printStackTrace();
+				}
+				App.debug("done " + file);
 			}
-			stdout.close();
-			optimizer.destroy();
-		} catch(IOException ioe) {
-			ioe.printStackTrace();
 		}
 	}
 
@@ -97,7 +114,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	}
 
 	int count() {
-		return files.size();
+		return count;
 	}
 
 	abstract String getExt();

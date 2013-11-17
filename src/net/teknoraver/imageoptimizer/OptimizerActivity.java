@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Vector;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -155,8 +156,8 @@ public class OptimizerActivity extends Activity implements Observer {
 
 	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
 		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
-		ArrayList<String> jpgs = new ArrayList<String>(files.size());
-		ArrayList<String> pngs = new ArrayList<String>(files.size());
+		Vector<String> jpgs = new Vector<String>(files.size());
+		Vector<String> pngs = new Vector<String>(files.size());
 		for(String file : files) {
 			if(file.toLowerCase(Locale.US).endsWith(".jpg"))
 				jpgs.add(file);
