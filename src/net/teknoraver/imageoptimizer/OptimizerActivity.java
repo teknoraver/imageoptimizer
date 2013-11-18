@@ -102,14 +102,14 @@ public class OptimizerActivity extends Activity implements Observer {
 					App.debug("error optimizing: " + res.path);
 					return;
 				}
-	
+
 				origsize += res.origsize;
 				if(res.compressed) {
 					newsize += res.newsize;
 					compressed.add(res.getName());
 				} else
 					newsize += res.origsize;
-	
+
 				currentfile.setText(res.getName());
 				progress.setProgress(progress.getProgress() + 1);
 				origs.setText(" " + sizeString(origsize));
@@ -121,10 +121,10 @@ public class OptimizerActivity extends Activity implements Observer {
 					currentOptim = optimizers.remove(0);
 					progress.setMax(currentOptim.count());
 					progress.setProgress(0);
-	
+
 					currentOptim.addObserver(OptimizerActivity.this);
 					new Thread(currentOptim).start();
-	
+
 					currlabel.setText(getString(R.string.optimizing, currentOptim.getExt()));
 				} else { // all done
 					currlabel.setText(R.string.done);

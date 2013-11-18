@@ -12,5 +12,5 @@
 		</menu>
 	</item>
 	<!-- <item android:id="@+id/menu_optimize" android:title="optimize" android:showAsAction="always|withText" android:icon="@android:drawable/ic_menu_save"/> -->
-		
+
 </menu>

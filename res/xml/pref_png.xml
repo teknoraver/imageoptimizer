@@ -14,5 +14,5 @@
 		android:key="pngquality"
 		android:title="@string/pngquality"
 		android:dependency="dopng"/>
-	
+
 </PreferenceScreen>

@@ -10,8 +10,6 @@ import java.util.Vector;
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
 
-	static final int CPU = Runtime.getRuntime().availableProcessors();
-
 	protected int quality;
 	protected Vector<String> files;
 	protected boolean preserve;
@@ -58,18 +56,24 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 
 	@Override
 	public void run() {
-		App.debug("starting optimization on " + files.size() + " files");
-		Thread t[] = new Thread[CPU];
+		final int CPU = Runtime.getRuntime().availableProcessors();
+		App.debug("starting optimization on " + files.size() + " files with " + CPU + " threads");
 
-		for(int i = 0; i < CPU; i++) {
-			t[i] = new Thread(new Run(), "" + i);
-			t[i].start();
+		if(CPU == 1)
+			new Run().run();
+		else {
+			Thread t[] = new Thread[CPU];
+
+			for(int i = 0; i < CPU; i++) {
+				t[i] = new Thread(new Run(), "" + i);
+				t[i].start();
+			}
+
+			for(int i = 0; i < CPU; i++)
+				try {
+					t[i].join();
+				} catch (InterruptedException e) { }
 		}
-
-		for(int i = 0; i < CPU; i++)
-			try {
-				t[i].join();
-			} catch (InterruptedException e) { }
 
 		files.clear();
 		files = null;
@@ -83,7 +87,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 				if(!run)
 					break;
 				String file = files.remove(0);
-				App.debug("optimizer " + (Thread.currentThread().getName()) + " " + file);
+//				App.debug("optimizer " + (Thread.currentThread().getName()) + " " + file);
 				try {
 					params[params.length - 1] = file;
 					Process optimizer = Runtime.getRuntime().exec(params);
@@ -102,7 +106,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 				} catch(IOException ioe) {
 					ioe.printStackTrace();
 				}
-				App.debug("done " + file);
+//				App.debug("done " + file);
 			}
 		}
 	}
