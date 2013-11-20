@@ -59,12 +59,12 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		final int CPU = Runtime.getRuntime().availableProcessors();
 		App.debug("starting optimization on " + files.size() + " files with " + CPU + " threads");
 
-		if(CPU == 1)
+		if(CPU == 1 || files.size() == 1)
 			new Run().run();
 		else {
 			Thread t[] = new Thread[CPU];
 
-			for(int i = 0; i < CPU; i++) {
+			for(int i = 0; i < Math.min(CPU, files.size()); i++) {
 				t[i] = new Thread(new Run(), "" + i);
 				t[i].start();
 			}
