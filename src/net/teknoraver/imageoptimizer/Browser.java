@@ -5,6 +5,8 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +23,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -46,6 +49,7 @@ class Image {
 	long size;
 	long date;
 	Bitmap thumb;
+	private static final DateFormat dateParser = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
 
 	Image(String f, long s, long d) {
 		path = f;
@@ -55,6 +59,15 @@ class Image {
 
 	String getName() {
 		return path.substring(path.lastIndexOf('/') + 1);
+	}
+
+	long getDate() {
+		try {
+			ExifInterface ei = new ExifInterface(path);
+			String exifDate = ei.getAttribute(ExifInterface.TAG_DATETIME);
+			return dateParser.parse(exifDate).getTime();
+		} catch (Exception e) { }
+		return date;
 	}
 }
 
@@ -84,7 +97,7 @@ class Sorter implements Comparator<Image> {
 		case SIZE:
 			return (int)Math.signum(lhs.size - rhs.size);
 		case DATE:
-			return (int)Math.signum(lhs.date - rhs.date);
+			return (int)Math.signum(lhs.getDate() - rhs.getDate());
 		}
 		return 0;
 	}
