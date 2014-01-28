@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.Menu;
@@ -127,11 +126,10 @@ class Sorter implements Comparator<Image> {
 	}
 }
 
-public class Browser extends ListActivity implements FileFilter, OnClickListener, Runnable, DialogInterface.OnClickListener {
+public class Browser extends ListActivity implements FileFilter, OnClickListener, DialogInterface.OnClickListener {
 	private static final String CPUINFO = "/proc/cpuinfo";
 	private static final String LASTVER = "last_version";
 
-	private final Handler handler = new Handler();
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
@@ -179,28 +177,29 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		go.setEnabled(false);
 		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
-		new Thread(this).start();
+		all.clear();
+		new FileScanner().execute();
 	}
 
-	@Override
-	public void run() {
-		all.clear();
-		Runnable pdclose = new Runnable() {
-			@Override
-			public void run() {
-				Collections.sort(all, new Sorter());
-				setListAdapter(new ImageAdapter(Browser.this, all));
-				pd.dismiss();
-				Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
+	private class FileScanner extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void ... v) {
+			for(String path : PathSelector.getPaths()) {
+				File file = new File(path);
+				if(file.isDirectory())
+					scan(file);
 			}
-		};
-		for(String path : PathSelector.getPaths()) {
-			File dir = new File(path);
-			if(dir.isDirectory())
-				scan(new File(path));
+			Collections.sort(all, new Sorter());
+
+			return null;
 		}
 
-		handler.post(pdclose);
+		@Override
+		protected void onPostExecute(Void v) {
+			setListAdapter(new ImageAdapter(Browser.this, all));
+			pd.dismiss();
+			Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();			
+		}
 	}
 
 	@Override
