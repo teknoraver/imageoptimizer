@@ -12,8 +12,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -24,7 +24,6 @@ import android.widget.TextView;
 public class OptimizerActivity extends Activity implements Observer {
 	public static final String OPTIMIZER = "optim";
 	private ArrayList<Optimizer> optimizers;
-	private Handler handler = new Handler();
 	private TextView currentfile;
 	private TextView origs;
 	private TextView news;
@@ -85,18 +84,19 @@ public class OptimizerActivity extends Activity implements Observer {
 
 	@Override
 	public void update(Observable observable, Object data) {
-		handler.post(new Updater((Optimizer.Result)data));
+		new UpdateProgress().execute((Optimizer.Result)data);
 	}
 
-	private class Updater implements Runnable {
-		private Optimizer.Result res;
-
-		Updater(Optimizer.Result r) {
-			res = r;
+	private class UpdateProgress extends AsyncTask<Optimizer.Result, Void, Void> {
+		Optimizer.Result res;
+		@Override
+		protected Void doInBackground(Optimizer.Result ... or) {
+			res = or[0];
+			return null;
 		}
 
 		@Override
-		public void run() {
+		protected void onPostExecute(Void v) {
 			if(res != null) {
 				if(res.error) {
 					App.debug("error optimizing: " + res.path);
