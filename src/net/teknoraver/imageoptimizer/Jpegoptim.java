@@ -49,10 +49,10 @@ class Jpegoptim extends Optimizer {
 	@Override
 	protected void parseOutput(String line) {
 		String res[] = line.split(",");
-		if(res[6].equals("error"))
+		if(res[7].equals("error"))
 			notifyObservers(new Result());
 		else
-			notifyObservers(new Result(res[0], Integer.parseInt(res[3]), Integer.parseInt(res[4]), res[6].equals("optimized")));
+			notifyObservers(new Result(res[0], Integer.parseInt(res[4]), Integer.parseInt(res[5]), res[7].equals("optimized")));
 	}
 
 	@Override
