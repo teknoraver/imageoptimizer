@@ -7,6 +7,9 @@ import java.util.Observer;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -17,12 +20,15 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class OptimizerActivity extends Activity implements Observer {
 	public static final String OPTIMIZER = "optim";
+	private static final int NOTIFICATION_OPTIMIZING = 0;
 	private ArrayList<Optimizer> optimizers;
 	private TextView currentfile;
 	private TextView origs;
@@ -73,6 +79,35 @@ public class OptimizerActivity extends Activity implements Observer {
 		update(null, null);
 	}
 
+	private void updateNotification(String ext, int curr, int count) {
+		NotificationCompat.Builder ncb =
+			new NotificationCompat.Builder(this)
+			.setSmallIcon(R.drawable.ic_launcher);
+
+		if(ext == null) {
+			ncb.setContentTitle(getString(R.string.notify_done))
+			.setAutoCancel(true);
+		} else {
+			ncb.setProgress(count, curr, false)
+			.setContentTitle(getString(R.string.notify_optimizing))
+			.setContentText(getString(R.string.notify_progress, ext, curr, count))
+			.setOngoing(true);
+		}
+
+		// The stack builder object will contain an artificial back stack for the
+		// started Activity.
+		// This ensures that navigating backward from the Activity leads out of
+		// your application to the Home screen.
+		ncb.setContentIntent(TaskStackBuilder.create(this)
+			.addParentStack(OptimizerActivity.class)
+			.addNextIntent(new Intent(this, OptimizerActivity.class))
+			.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+		//ncb.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(), 0));
+
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.notify(NOTIFICATION_OPTIMIZING, ncb.build());
+	}
+
 	public String getRealPathFromURI(Uri contentUri) {
 		String res = null;
 		Cursor cursor = getContentResolver().query(contentUri, new String[]{MediaStore.Images.Media.DATA}, null, null, null);
@@ -118,6 +153,8 @@ public class OptimizerActivity extends Activity implements Observer {
 				news.setText(" " + sizeString(newsize));
 				if(origsize != 0)
 					saved.setText(" " + (100 - (newsize * 100 / origsize) + " %"));
+
+				updateNotification(currentOptim.getExt(), progress.getProgress(), currentOptim.count());
 			} else {
 				if(!optimizers.isEmpty()) {
 					currentOptim = optimizers.remove(0);
@@ -132,22 +169,11 @@ public class OptimizerActivity extends Activity implements Observer {
 					currlabel.setText(R.string.done);
 					currentfile.setText(null);
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+					updateNotification(null, 0, 0);
 					mediaRefresh();
 				}
 			}
 		}
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-
-		for(Optimizer optim : optimizers)
-			optim.abort();
-		if(currentOptim != null)
-			currentOptim.abort();
-
-		mediaRefresh();
 	}
 
 	private void mediaRefresh() {

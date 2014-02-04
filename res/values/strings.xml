@@ -29,4 +29,9 @@
 	<string name="support_msg">Hi,\n\nMy phone is unsupported by Image Optimizer, please add support for it.\n\nHere are attached some anonymous info on the CPU so you can do it!</string>
 	<string name="support_atterror">Attachment Error</string>
 	<string name="support_intent">Send email…</string>
+
+	<!-- notifications -->
+	<string name="notify_optimizing">Optimization in progress</string>
+	<string name="notify_done">Optimization completed</string>
+	<string name="notify_progress">%1$s optimization %2$d/%3$d</string>
 </resources>
