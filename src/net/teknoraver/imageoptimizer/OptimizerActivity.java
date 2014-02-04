@@ -45,6 +45,8 @@ public class OptimizerActivity extends Activity implements Observer {
 
 		// called via Intent
 		if(optimizers == null) {
+			Optimizer.setupBinaries(this);
+
 			App.debug("Intent: " + getIntent().getAction());
 			ArrayList<String> files = new ArrayList<String>();
 			if(Intent.ACTION_SEND.equals(getIntent().getAction())) {

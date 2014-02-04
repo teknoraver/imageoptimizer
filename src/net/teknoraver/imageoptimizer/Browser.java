@@ -2,9 +2,6 @@ package net.teknoraver.imageoptimizer;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,20 +10,15 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Display;
@@ -126,10 +118,7 @@ class Sorter implements Comparator<Image> {
 	}
 }
 
-public class Browser extends ListActivity implements FileFilter, OnClickListener, DialogInterface.OnClickListener {
-	private static final String CPUINFO = "/proc/cpuinfo";
-	private static final String LASTVER = "last_version";
-
+public class Browser extends ListActivity implements FileFilter, OnClickListener {
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
@@ -149,28 +138,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		pm = PreferenceManager.getDefaultSharedPreferences(this);
 
-		boolean update = true;
-		try {
-			final int ver = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-			if(pm.getInt(LASTVER, 0) == ver)
-				update = false;
-			else {
-				App.debug("Updating binaries from " + pm.getInt(LASTVER, 0) + " to " + ver);
-				Editor ed = pm.edit();
-				ed.putInt(LASTVER, ver);
-				ed.commit();
-			}
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		}
-		try {
-			getFile("jpegoptim", update);
-			getFile("optipng", update);
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			Toast.makeText(this, R.string.ioerror, Toast.LENGTH_LONG).show();
-			finish();
-		}
+		Optimizer.setupBinaries(this);
 	}
 
 	private void startScan() {
@@ -298,69 +266,6 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				.putExtra(OptimizerActivity.OPTIMIZER, optimizers));
 	}
 
-	private void getFile(final String name, boolean update) throws IOException {
-		String binary = detectCpu();
-		if(binary == null) {
-			new AlertDialog.Builder(this)
-				.setTitle(getString(R.string.arch))
-				.setMessage(getString(R.string.sendmail))
-				.setNegativeButton(android.R.string.no, this)
-				.setPositiveButton(android.R.string.yes, this)
-				.setIcon(android.R.drawable.ic_dialog_email)
-				.create().show();
-		} else {
-			final File file = new File(getFilesDir(), name);
-			if (update || !file.exists())
-				try {
-					App.debug("extracting " + name);
-					getFilesDir().mkdirs();
-					final InputStream in = getAssets().open(name + '/' + binary);
-					final FileOutputStream out = new FileOutputStream(file);
-					final byte[] buf = new byte[65536];
-					int len;
-					while ((len = in.read(buf)) > 0)
-						out.write(buf, 0, len);
-					in.close();
-					out.close();
-					Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
-				} catch (final IOException ex) {
-					ex.printStackTrace();
-					finish();
-					return;
-				}
-		}
-        }
-
-	private String detectCpu() {
-		if(Build.CPU_ABI.startsWith("arm"))
-			return "arm";
-		if(Build.CPU_ABI.startsWith("x86"))
-			return "x86";
-		if(Build.CPU_ABI.startsWith("mips"))
-			return "mips";
-
-		return null;
-	}
-
-	@Override
-	public void onClick(DialogInterface dialog, int which) {
-		if(which == DialogInterface.BUTTON_POSITIVE) {
-			Intent intent = new Intent(Intent.ACTION_SEND);
-			intent.setType("message/rfc822");
-			intent.putExtra(Intent.EXTRA_EMAIL, new String[] {getString(R.string.email)});
-			intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.support_sub));
-			intent.putExtra(Intent.EXTRA_TEXT, getString(R.string.support_msg));
-			File file = new File(CPUINFO);
-			if (!file.exists() || !file.canRead()) {
-				Toast.makeText(this, getString(R.string.support_atterror), Toast.LENGTH_LONG).show();
-				finish();
-				return;
-			}
-			intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + CPUINFO));
-			startActivity(Intent.createChooser(intent, getString(R.string.support_intent)));
-		}
-		finish();
-	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
