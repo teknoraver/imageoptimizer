@@ -46,7 +46,7 @@ public class PathSelector extends ListActivity {
 		super.onPause();
 
 		int i = 1;
-		Editor values =  getSharedPreferences(PATHS, MODE_PRIVATE).edit().clear();
+		Editor values = getSharedPreferences(PATHS, MODE_PRIVATE).edit().clear();
 		for(String s : paths)
 			values.putString("path" + i++, s);
 		values.commit();
@@ -81,7 +81,7 @@ public class PathSelector extends ListActivity {
 	static ArrayList<String> getPaths()
 	{
 		ArrayList<String> p = new ArrayList<String>();
-		SharedPreferences values =  App.getContext().getSharedPreferences(PATHS, MODE_PRIVATE);
+		SharedPreferences values = App.getContext().getSharedPreferences(PATHS, MODE_PRIVATE);
 		for(Object o : values.getAll().values())
 			p.add(o.toString());
 

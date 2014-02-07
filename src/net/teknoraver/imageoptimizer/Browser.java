@@ -166,7 +166,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		protected void onPostExecute(Void v) {
 			setListAdapter(new ImageAdapter(Browser.this, all));
 			pd.dismiss();
-			Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();			
+			Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
 		}
 	}
 
