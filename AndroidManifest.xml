@@ -5,8 +5,8 @@
 	android:versionName="1.7.2" >
 
 	<uses-sdk
-		android:minSdkVersion="8"
-		android:targetSdkVersion="18" />
+		android:minSdkVersion="9"
+		android:targetSdkVersion="19" />
 
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.INTERNET" />
@@ -38,8 +38,10 @@
 				android:value=".Browser" />
 		</activity>
 		<activity
-			android:name="com.google.ads.AdActivity"
-			android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
+			android:name="com.google.android.gms.ads.AdActivity"
+			android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+		<meta-data android:name="com.google.android.gms.version"
+			android:value="@integer/google_play_services_version"/>
 		<activity
 			android:name="com.lamerman.FileDialog"
 			android:label="@string/title_browse"

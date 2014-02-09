@@ -1,16 +1,17 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	tools:context=".Browser" >
 
-	<com.google.ads.AdView android:id="@+id/adView"
+	<com.google.android.gms.ads.AdView
+	    xmlns:ads="http://schemas.android.com/apk/res-auto"
+	    android:id="@+id/adView"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		ads:adUnitId="a150e0e2f10bbc5"
 		ads:adSize="SMART_BANNER"
-		ads:loadAdOnCreate="true"
 		android:layout_alignParentTop="true"/>
 
 	<Button

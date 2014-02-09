@@ -9,6 +9,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -135,6 +138,9 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		go = (Button)findViewById(R.id.optimize);
 		go.setOnClickListener(this);
+
+		AdView adView = (AdView)findViewById(R.id.adView);
+		adView.loadAd(new AdRequest.Builder().build());
 
 		pm = PreferenceManager.getDefaultSharedPreferences(this);
 
