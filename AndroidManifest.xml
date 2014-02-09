@@ -57,7 +57,8 @@
 			android:configChanges="orientation|keyboard|screenSize"
 			android:label="@string/title_activity_compress"
 			android:parentActivityName=".Browser"
-			android:permission="android.permission.WRITE_EXTERNAL_STORAGE">
+			android:permission="android.permission.WRITE_EXTERNAL_STORAGE"
+			android:launchMode="singleInstance">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".Browser" />

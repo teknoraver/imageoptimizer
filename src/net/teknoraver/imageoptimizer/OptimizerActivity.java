@@ -79,10 +79,21 @@ public class OptimizerActivity extends Activity implements Observer {
 		update(null, null);
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		for(Optimizer optim : optimizers)
+			optim.abort();
+		if(currentOptim != null)
+			currentOptim.abort();
+		mediaRefresh();
+	}
+
 	private void updateNotification(String ext, int curr, int count) {
 		NotificationCompat.Builder ncb =
 			new NotificationCompat.Builder(this)
-			.setSmallIcon(R.drawable.ic_launcher);
+			.setSmallIcon(R.drawable.notify);
 
 		if(ext == null) {
 			ncb.setContentTitle(getString(R.string.notify_done))
