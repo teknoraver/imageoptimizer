@@ -20,7 +20,11 @@
 	<string name="ioerror">Filesystem error</string>
 	<string name="noimages">No Images Found</string>
 	<string name="image">image</string>
-
+	<string name="date">name</string>
+	<string name="name">name</string>
+	<string name="size">name</string>
+	<string name="sort">Sort by</string>
+		
 	<!-- ask for support -->
 	<string name="arch">Unsupported device</string>
 	<string name="sendmail">Your device is unsupported by Image Optimizer.\nWould you like to ask the developer to add support for your device?</string>
