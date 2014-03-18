@@ -20,9 +20,9 @@
 	<string name="ioerror">Filesystem error</string>
 	<string name="noimages">No Images Found</string>
 	<string name="image">image</string>
-	<string name="date">name</string>
+	<string name="date">date</string>
 	<string name="name">name</string>
-	<string name="size">name</string>
+	<string name="size">size</string>
 	<string name="sort">Sort by</string>
 
 	<!-- ask for support -->
