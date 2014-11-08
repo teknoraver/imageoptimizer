@@ -1,9 +1,6 @@
-*.apk
-*.ap_
-*.dex
-*.class
-/bin/
-/gen/
+.gradle
 /local.properties
-/proguard/
-/lint.xml
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
