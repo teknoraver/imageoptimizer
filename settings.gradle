@@ -1,1 +1,1 @@
-include ':app', ':fileexplorer'
+include ':app', ':fileexplorer', ':seekbar'
