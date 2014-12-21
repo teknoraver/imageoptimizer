@@ -48,6 +48,7 @@ class Jpegoptim extends Optimizer {
 
 	@Override
 	protected void parseOutput(String line) {
+//		App.debug("jpegoptim: '" + line + "'");
 		String res[] = line.split(",");
 		if(res[7].equals("error"))
 			notifyObservers(new Result());

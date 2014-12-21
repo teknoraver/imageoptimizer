@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="cant_read_folder">folder %s can\'t be read!</string>
+    <string name="nnew">New</string>
+    <string name="select">Select</string>
+    <string name="file_name">File name:</string>
+    <string name="cancel">Cancel</string>
+    <string name="create">Save</string>
+    <string name="no_data">No Data</string>
+    <string name="filenamepath">File path</string>
+    <string name="filefolder">click to select</string>
+</resources>
