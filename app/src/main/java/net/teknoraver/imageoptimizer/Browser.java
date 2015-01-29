@@ -179,6 +179,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			db.close();
 			setListAdapter(new ImageAdapter(Browser.this, all));
 			pd.dismiss();
+			enableButton();
 			Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
 		}
 	}
