@@ -9,10 +9,12 @@ import java.util.Vector;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -39,6 +41,7 @@ public class OptimizerActivity extends Activity implements Observer {
 	private TextView currlabel;
 	private Optimizer currentOptim;
 	private ArrayList<String> compressed = new ArrayList<String>();
+	private SQLiteDatabase db;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -48,6 +51,8 @@ public class OptimizerActivity extends Activity implements Observer {
 
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		optimizers = (ArrayList<Optimizer>)getIntent().getSerializableExtra(OPTIMIZER);
+
+		db = openOrCreateDatabase("images", MODE_PRIVATE, null);
 
 		// called via Intent
 		if(optimizers == null) {
@@ -83,6 +88,7 @@ public class OptimizerActivity extends Activity implements Observer {
 	protected void onDestroy() {
 		super.onDestroy();
 
+		db.close();
 		for(Optimizer optim : optimizers)
 			optim.abort();
 		if(currentOptim != null)
@@ -151,6 +157,9 @@ public class OptimizerActivity extends Activity implements Observer {
 					return;
 				}
 
+				ContentValues contentValues = new ContentValues();
+				contentValues.put("path", res.path);
+				db.insert("images", null, contentValues);
 				origsize += res.origsize;
 				if(res.compressed) {
 					newsize += res.newsize;

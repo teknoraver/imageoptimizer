@@ -18,6 +18,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
@@ -45,10 +47,11 @@ class Image {
 	Bitmap thumb;
 	private static final DateFormat dateParser = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
 
-	Image(String f, long s, long d) {
+	Image(String f, long s, long d, boolean c) {
 		path = f;
 		size = s;
 		date = d;
+		compress = c;
 	}
 
 	String getName() {
@@ -128,6 +131,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	private Sorter sorter = new Sorter();
 	private Button go;
 	private SharedPreferences pm;
+	private SQLiteDatabase db;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +156,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
 		all.clear();
+		db = openOrCreateDatabase("images", MODE_PRIVATE, null);
+		db.execSQL("CREATE TABLE IF NOT EXISTS images(path TEXT PRIMARY KEY)");
 		new FileScanner().execute();
 	}
 
@@ -170,6 +176,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 		@Override
 		protected void onPostExecute(Void v) {
+			db.close();
 			setListAdapter(new ImageAdapter(Browser.this, all));
 			pd.dismiss();
 			Toast.makeText(Browser.this, R.string.hint, Toast.LENGTH_LONG).show();
@@ -202,7 +209,8 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				if(child.isDirectory())
 					scan(child);
 				else
-					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified()));
+					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified(),
+						db.query("images", new String[]{"path"}, "path = '" + child.getAbsolutePath() + "'", null, null, null, null).getCount() == 0));
 	}
 
 	@Override
