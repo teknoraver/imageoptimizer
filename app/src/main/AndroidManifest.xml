@@ -58,7 +58,7 @@
 			android:label="@string/title_activity_compress"
 			android:parentActivityName=".Browser"
 			android:permission="android.permission.WRITE_EXTERNAL_STORAGE"
-			android:launchMode="singleInstance">
+			android:launchMode="singleTop">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value=".Browser" />

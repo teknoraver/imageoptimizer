@@ -159,7 +159,7 @@ public class OptimizerActivity extends Activity implements Observer {
 
 				ContentValues contentValues = new ContentValues();
 				contentValues.put("path", res.path);
-				db.insert("images", null, contentValues);
+				db.insertWithOnConflict("images", null, contentValues, SQLiteDatabase.CONFLICT_IGNORE);
 				origsize += res.origsize;
 				if(res.compressed) {
 					newsize += res.newsize;
