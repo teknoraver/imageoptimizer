@@ -62,8 +62,13 @@ class Image {
 		try {
 			ExifInterface ei = new ExifInterface(path);
 			String exifDate = ei.getAttribute(ExifInterface.TAG_DATETIME);
+			/* no EXIF, return file date */
+			if (exifDate == null)
+				return date;
 			return dateParser.parse(exifDate).getTime();
-		} catch (Exception e) { }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return date;
 	}
 }
@@ -205,13 +210,15 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 
 	private void scan(File file) {
 		File children[] = file.listFiles(this);
+		file = null;
 		if (children != null)
-			for (File child : children)
-				if(child.isDirectory())
+			for (File child : children) {
+				if (child.isDirectory())
 					scan(child);
 				else
 					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified(),
 						db.query("images", new String[]{"path"}, "path = '" + child.getAbsolutePath() + "'", null, null, null, null).getCount() == 0));
+			}
 	}
 
 	@Override
