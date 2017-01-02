@@ -26,6 +26,9 @@ import android.media.ExifInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.PermissionChecker;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -157,6 +160,10 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 	}
 
 	private void startScan() {
+		if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+		    != PermissionChecker.PERMISSION_GRANTED)
+			ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
 		go.setEnabled(false);
 		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
@@ -215,9 +222,13 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 			for (File child : children) {
 				if (child.isDirectory())
 					scan(child);
-				else
+				else {
+					Cursor c = db.query("images", new String[]{"COUNT(path)"}, "path=?", new String[]{child.getAbsolutePath()}, null, null, null);
+					c.moveToFirst();
 					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified(),
-						db.query("images", new String[]{"path"}, "path = '" + child.getAbsolutePath() + "'", null, null, null, null).getCount() == 0));
+						c.getInt(0) == 0));
+					c.close();
+				}
 			}
 	}
 
