@@ -6,10 +6,11 @@ android {
 
     defaultConfig {
         applicationId "net.teknoraver.imageoptimizer"
-        minSdkVersion 10
-        targetSdkVersion 21
+        minSdkVersion 16
+        targetSdkVersion 25
         versionCode 16
         versionName "1.7.5"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -22,8 +23,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:+'
-    compile 'com.google.android.gms:play-services:+'
     compile project(':fileexplorer')
     compile project(':seekbar')
+    compile 'com.google.android.gms:play-services:10.0.1'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
 }
