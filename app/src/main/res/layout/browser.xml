@@ -21,7 +21,8 @@
 		android:layout_alignParentBottom="true"
 		android:layout_alignParentLeft="true"
 		android:text="@string/optimize"
-		android:enabled="false"/>
+		android:enabled="false"
+		android:layout_alignParentStart="true"/>
 
 	<ListView
 		android:id="@android:id/list"
