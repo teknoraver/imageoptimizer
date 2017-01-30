@@ -9,7 +9,7 @@
 
 	<net.teknoraver.seekbar.SeekBarPreference
 		android:defaultValue="1"
-		android:max="7"
+		android:max="8"
 		robobunny:min="0"
 		android:key="pngquality"
 		android:title="@string/pngquality"

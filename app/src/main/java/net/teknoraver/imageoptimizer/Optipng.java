@@ -25,6 +25,10 @@ class Optipng extends Optimizer {
 		ArrayList<String> args = new ArrayList<String>();
 		args.add(BIN);
 		args.add("-csv");
+		if (quality > 7) {
+			args.add("-zm1-9");
+			quality = 7;
+		}
 		args.add("-o" + quality);
 		if(preserve)
 			args.add("-preserve");
