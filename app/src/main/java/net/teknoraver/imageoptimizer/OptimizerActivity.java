@@ -243,8 +243,10 @@ public class OptimizerActivity extends Activity implements Observer {
 			return len + " bytes";
 		else if(len < 1 << 20)
 			return ((int)(len / 10.24)) / 100.0 + " Kb";
-		else
+		else if(len < 1 << 30)
 			return ((int)(len / 10485.76)) / 100.0 + " Mb";
+		else
+			return ((int)(len / 107374182.4)) / 100.0 + " Gb";
 	}
 
 }
