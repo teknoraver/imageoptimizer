@@ -6,3 +6,5 @@
 /build
 *.apk
 *.log
+*.iml
+/.idea/
