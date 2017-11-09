@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.1'
 
     defaultConfig {
         applicationId "net.teknoraver.imageoptimizer"
         minSdkVersion 16
-        targetSdkVersion 25
-        versionCode 18
-        versionName "1.8"
+        targetSdkVersion 27
+        versionCode 19
+        versionName "1.8.1"
         multiDexEnabled true
     }
     buildTypes {
@@ -25,9 +25,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':fileexplorer')
     compile project(':seekbar')
-    compile 'com.google.android.gms:play-services:10.0.1'
-    compile 'com.android.support:multidex:1.0.1'
-    compile 'com.google.android.gms:play-services-ads:10.0.1'
-    compile 'com.android.support:support-v13:25.1.0'
-    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:multidex:1.0.2'
+    compile 'com.google.android.gms:play-services-ads:11.6.0'
 }
