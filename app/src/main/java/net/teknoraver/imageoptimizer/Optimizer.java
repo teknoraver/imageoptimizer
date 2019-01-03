@@ -174,10 +174,6 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 			return "x86_64";
 		if(Build.CPU_ABI.startsWith("x86"))
 			return "x86";
-		if(Build.CPU_ABI.startsWith("mips64"))
-			return "mips64";
-		if(Build.CPU_ABI.startsWith("mips"))
-			return "mips";
 
 		return null;
 	}
