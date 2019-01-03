@@ -166,7 +166,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	}
 
 	private static String detectCpu() {
-		if(Build.CPU_ABI.startsWith("arm64"))
+		if(Build.CPU_ABI.startsWith("arm64") || Build.CPU_ABI.startsWith("aarch64"))
 			return "arm64";
 		if(Build.CPU_ABI.startsWith("arm"))
 			return "arm";
