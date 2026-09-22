@@ -47,7 +47,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':seekbar')
-    implementation 'com.google.android.gms:play-services-ads:25.4.0'
     implementation 'androidx.core:core:1.19.0'
     implementation 'androidx.documentfile:documentfile:1.1.0'
     implementation 'androidx.exifinterface:exifinterface:1.4.2'

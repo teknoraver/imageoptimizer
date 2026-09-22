@@ -5,15 +5,6 @@
 	android:layout_height="match_parent"
 	tools:context=".Browser" >
 
-	<com.google.android.gms.ads.AdView
-	    xmlns:ads="http://schemas.android.com/apk/res-auto"
-	    android:id="@+id/adView"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		ads:adUnitId="a150e0e2f10bbc5"
-		ads:adSize="SMART_BANNER"
-		android:layout_alignParentTop="true"/>
-
 	<Button
 		android:id="@+id/optimize"
 		android:layout_width="fill_parent"
@@ -29,14 +20,14 @@
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:layout_above="@id/optimize"
-		android:layout_below="@id/adView"
+		android:layout_alignParentTop="true"
 		android:fastScrollEnabled="true"/>
 
 	<TextView
 		android:id="@android:id/empty"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:layout_below="@id/adView"
+		android:layout_alignParentTop="true"
 		android:gravity="center"
 		android:text="@string/noimages"
 		android:textAppearance="?android:attr/textAppearanceLarge" />

@@ -12,9 +12,6 @@ import java.util.Locale;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.exifinterface.media.ExifInterface;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -32,6 +29,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -142,6 +140,7 @@ class Sorter implements Comparator<Image> {
 
 public class Browser extends ListActivity implements OnClickListener {
 	private static final int PERMISSION_REQUEST = 1;
+	private static final long SCAN_WAKELOCK_TIMEOUT = 60000;
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
@@ -149,6 +148,8 @@ public class Browser extends ListActivity implements OnClickListener {
 	private Button go;
 	private SharedPreferences pm;
 	private SQLiteDatabase db;
+	private PowerManager.WakeLock scanWakeLock;
+	private boolean scanning;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -160,10 +161,10 @@ public class Browser extends ListActivity implements OnClickListener {
 		go = (Button)findViewById(R.id.optimize);
 		go.setOnClickListener(this);
 
-		AdView adView = (AdView)findViewById(R.id.adView);
-		adView.loadAd(new AdRequest.Builder().build());
-
 		pm = PreferenceManager.getDefaultSharedPreferences(this);
+
+		PowerManager power = (PowerManager)getSystemService(POWER_SERVICE);
+		scanWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "imageoptimizer:scan");
 
 		Optimizer.setupBinaries(this);
 	}
@@ -180,13 +181,19 @@ public class Browser extends ListActivity implements OnClickListener {
 			ActivityCompat.requestPermissions(this, new String[]{readImagesPermission()}, PERMISSION_REQUEST);
 			return;
 		}
+		// MediaStore/SAF scanning is IPC-bound and can take a while; a second onResume()
+		// (e.g. around a screen lock/unlock) must not start an overlapping scan against
+		// the same mutable `all` list and `db` handle.
+		if(scanning)
+			return;
+		scanning = true;
 
 		go.setEnabled(false);
 		setListAdapter(null);
 		pd = ProgressDialog.show(this, getString(R.string.scanning_title), getString(R.string.scanning_txt));
-		all.clear();
 		db = openOrCreateDatabase("images", MODE_PRIVATE, null);
 		db.execSQL("CREATE TABLE IF NOT EXISTS images(path TEXT PRIMARY KEY)");
+		scanWakeLock.acquire(SCAN_WAKELOCK_TIMEOUT);
 		new FileScanner().execute();
 	}
 
@@ -198,23 +205,28 @@ public class Browser extends ListActivity implements OnClickListener {
 			startScan();
 	}
 
-	private class FileScanner extends AsyncTask<Void, Void, Void> {
+	private class FileScanner extends AsyncTask<Void, Void, ArrayList<Image>> {
 		@Override
-		protected Void doInBackground(Void ... v) {
-			scanMediaStore(all);
+		protected ArrayList<Image> doInBackground(Void ... v) {
+			ArrayList<Image> result = new ArrayList<Image>();
+			scanMediaStore(result);
 			for(String treeUri : PathSelector.getPaths()) {
 				DocumentFile dir = DocumentFile.fromTreeUri(Browser.this, Uri.parse(treeUri));
 				if(dir != null)
-					scanSaf(dir, all);
+					scanSaf(dir, result);
 			}
-			Collections.sort(all, new Sorter());
+			Collections.sort(result, new Sorter());
 
-			return null;
+			return result;
 		}
 
 		@Override
-		protected void onPostExecute(Void v) {
+		protected void onPostExecute(ArrayList<Image> result) {
+			all = result;
 			db.close();
+			scanning = false;
+			if(scanWakeLock.isHeld())
+				scanWakeLock.release();
 			setListAdapter(new ImageAdapter(Browser.this, all));
 			pd.dismiss();
 			enableButton();
