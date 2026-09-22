@@ -2,15 +2,10 @@ package net.teknoraver.imageoptimizer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
-
-import androidx.documentfile.provider.DocumentFile;
-import androidx.exifinterface.media.ExifInterface;
 
 import android.app.Activity;
 import android.app.ListActivity;
@@ -34,6 +29,7 @@ import android.preference.PreferenceManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.PermissionChecker;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -53,9 +49,14 @@ class Image {
 	String name;
 	boolean compress;
 	long size;
+	// For MediaStore-sourced images this is DATE_TAKEN (EXIF date, already extracted and
+	// cached by the media scanner at indexing time) falling back to DATE_MODIFIED; for
+	// SAF-sourced images it's the file's last-modified time. Deliberately NOT re-read from
+	// EXIF here: doing that per-image during a sort comparator means one ContentResolver
+	// round-trip per photo, which is fine for a handful of files but takes minutes for a
+	// few thousand.
 	long date;
 	Bitmap thumb;
-	private static final DateFormat dateParser = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
 
 	Image(String u, String n, long s, long d, boolean c) {
 		uri = u;
@@ -70,18 +71,6 @@ class Image {
 	}
 
 	long getDate() {
-		try (InputStream in = App.getContext().getContentResolver().openInputStream(Uri.parse(uri))) {
-			if (in == null)
-				return date;
-			ExifInterface ei = new ExifInterface(in);
-			String exifDate = ei.getAttribute(ExifInterface.TAG_DATETIME);
-			/* no EXIF, return file date */
-			if (exifDate == null)
-				return date;
-			return dateParser.parse(exifDate).getTime();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		return date;
 	}
 }
@@ -209,12 +198,16 @@ public class Browser extends ListActivity implements OnClickListener {
 		@Override
 		protected ArrayList<Image> doInBackground(Void ... v) {
 			ArrayList<Image> result = new ArrayList<Image>();
-			scanMediaStore(result);
-			for(String treeUri : PathSelector.getPaths()) {
-				DocumentFile dir = DocumentFile.fromTreeUri(Browser.this, Uri.parse(treeUri));
-				if(dir != null)
-					scanSaf(dir, result);
-			}
+			ArrayList<String> paths = PathSelector.getPaths();
+			if(paths.isEmpty())
+				// no folders chosen: fall back to scanning the whole photo library
+				scanMediaStore(result);
+			else
+				// folders explicitly chosen: scan only those, same as picking custom paths did before
+				for(String treeUriStr : paths) {
+					Uri treeUri = Uri.parse(treeUriStr);
+					scanSaf(treeUri, DocumentsContract.getTreeDocumentId(treeUri), result);
+				}
 			Collections.sort(result, new Sorter());
 
 			return result;
@@ -260,6 +253,7 @@ public class Browser extends ListActivity implements OnClickListener {
 			MediaStore.Images.Media.DISPLAY_NAME,
 			MediaStore.Images.Media.SIZE,
 			MediaStore.Images.Media.DATE_MODIFIED,
+			MediaStore.Images.Media.DATE_TAKEN,
 		};
 		String selection = MediaStore.Images.Media.MIME_TYPE + "=? OR " + MediaStore.Images.Media.MIME_TYPE + "=?";
 		String[] args = {"image/jpeg", "image/png"};
@@ -270,29 +264,56 @@ public class Browser extends ListActivity implements OnClickListener {
 			int nameIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 			int sizeIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE);
 			int dateIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED);
+			int dateTakenIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN);
 			while(c.moveToNext()) {
 				String name = c.getString(nameIdx);
 				if(name == null || name.charAt(0) == '.' || !isWanted(name))
 					continue;
 				Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, c.getLong(idIdx));
-				addImage(out, uri, name, c.getLong(sizeIdx), c.getLong(dateIdx) * 1000);
+				long dateTaken = c.getLong(dateTakenIdx);
+				long date = dateTaken > 0 ? dateTaken : c.getLong(dateIdx) * 1000;
+				addImage(out, uri, name, c.getLong(sizeIdx), date);
 			}
 		}
 	}
 
-	private void scanSaf(DocumentFile dir, ArrayList<Image> out) {
-		DocumentFile[] children = dir.listFiles();
-		if(children == null)
-			return;
-		for(DocumentFile child : children) {
-			if(child.isDirectory()) {
-				scanSaf(child, out);
-				continue;
+	/**
+	 * Lists a SAF directory's children in a single batched cursor query, instead of via
+	 * DocumentFile.listFiles(), whose isDirectory()/lastModified()/getName()/length() each
+	 * do their own separate ContentProvider round-trip per child — catastrophically slow
+	 * for large folders (thousands of individual IPC calls instead of one query).
+	 */
+	private void scanSaf(Uri treeUri, String parentDocId, ArrayList<Image> out) {
+		ContentResolver cr = getContentResolver();
+		Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parentDocId);
+		String[] projection = {
+			DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+			DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+			DocumentsContract.Document.COLUMN_SIZE,
+			DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+			DocumentsContract.Document.COLUMN_MIME_TYPE,
+		};
+		try (Cursor c = cr.query(childrenUri, projection, null, null, null)) {
+			if(c == null)
+				return;
+			int idIdx = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DOCUMENT_ID);
+			int nameIdx = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+			int sizeIdx = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_SIZE);
+			int dateIdx = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_LAST_MODIFIED);
+			int mimeIdx = c.getColumnIndexOrThrow(DocumentsContract.Document.COLUMN_MIME_TYPE);
+			while(c.moveToNext()) {
+				String docId = c.getString(idIdx);
+				if(DocumentsContract.Document.MIME_TYPE_DIR.equals(c.getString(mimeIdx))) {
+					scanSaf(treeUri, docId, out);
+					continue;
+				}
+				long lastModified = c.getLong(dateIdx);
+				String name = c.getString(nameIdx);
+				if(name == null || name.charAt(0) == '.' || !isWanted(name))
+					continue;
+				Uri docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId);
+				addImage(out, docUri, name, c.getLong(sizeIdx), lastModified);
 			}
-			String name = child.getName();
-			if(name == null || name.charAt(0) == '.' || !isWanted(name))
-				continue;
-			addImage(out, child.getUri(), name, child.length(), child.lastModified());
 		}
 	}
 

@@ -7,7 +7,7 @@
 	<string name="pref_header_general">General</string>
 	<string name="add_path">Add path</string>
 	<string name="alreadypath">Directory already in search path</string>
-	<string name="emptypaths">No extra folders added.\nYour photo library is always scanned automatically.</string>
+	<string name="emptypaths">Search path is empty\nwill scan the whole photo library</string>
 	<string name="searchpath">Images search path</string>
 	<string name="destdir">Save images to a different directory</string>
 	<string name="savepath">Output directory</string>

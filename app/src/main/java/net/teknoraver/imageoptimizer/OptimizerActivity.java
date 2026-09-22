@@ -93,8 +93,14 @@ public class OptimizerActivity extends Activity implements Observer {
 		if(Build.VERSION.SDK_INT >= 30 && !writingToCustomDir()) {
 			ArrayList<Uri> uris = new ArrayList<Uri>();
 			for(Optimizer o : optimizers)
-				for(String s : o.files)
-					uris.add(Uri.parse(s));
+				for(String s : o.files) {
+					Uri uri = Uri.parse(s);
+					// createWriteRequest() only accepts MediaStore rows referenced by a
+					// specific id; SAF documents already have a persisted write grant and
+					// must not be included here, or the whole call throws.
+					if(MediaStore.AUTHORITY.equals(uri.getAuthority()))
+						uris.add(uri);
+				}
 			if(!uris.isEmpty()) {
 				PendingIntent pi = MediaStore.createWriteRequest(getContentResolver(), uris);
 				try {

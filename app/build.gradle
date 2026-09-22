@@ -58,5 +58,4 @@ dependencies {
     implementation project(':seekbar')
     implementation 'androidx.core:core:1.19.0'
     implementation 'androidx.documentfile:documentfile:1.1.0'
-    implementation 'androidx.exifinterface:exifinterface:1.4.2'
 }
