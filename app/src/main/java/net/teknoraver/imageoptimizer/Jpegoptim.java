@@ -21,7 +21,7 @@ import java.util.Vector;
 
 class Jpegoptim extends Optimizer {
 	private static final long serialVersionUID = -2673614600679067178L;
-	private static final String BIN = App.getContext().getFilesDir() + "/jpegoptim";
+	private static final String BIN = App.getContext().getApplicationInfo().nativeLibraryDir + "/libjpegoptim.so";
 	private boolean compress;
 	private int threshold;
 

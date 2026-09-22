@@ -17,7 +17,7 @@ import java.util.Vector;
 
 class Optipng extends Optimizer {
 	private static final long serialVersionUID = 3211055437537470542L;
-	private static final String BIN = App.getContext().getFilesDir() + "/optipng";
+	private static final String BIN = App.getContext().getApplicationInfo().nativeLibraryDir + "/liboptipng.so";
 
 	Optipng(Vector<String> f, int q, boolean p, String o) {
 		super(f, q, p, o);

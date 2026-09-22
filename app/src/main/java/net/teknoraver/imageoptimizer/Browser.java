@@ -35,7 +35,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.PermissionChecker;
 import android.provider.MediaStore;
-import android.view.Display;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -399,13 +399,12 @@ class ImageAdapter extends ArrayAdapter<Image>
 	private int width;
 	private int height;
 
-	@SuppressWarnings("deprecation")
 	ImageAdapter(Activity a, ArrayList<Image> f)
 	{
 		super(a, R.layout.listitem, f);
-		Display display = a.getWindowManager().getDefaultDisplay();
-		width = display.getWidth() / 4;
-		height = display.getHeight() / 4;
+		DisplayMetrics dm = a.getResources().getDisplayMetrics();
+		width = dm.widthPixels / 4;
+		height = dm.heightPixels / 4;
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package net.teknoraver.imageoptimizer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,19 +20,13 @@ import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
-import android.os.Build;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
 
 	private static final String CPUINFO = "/proc/cpuinfo";
-	private static final String LASTVER = "last_version";
 
 	protected int quality;
 	protected Vector<String> files;
@@ -199,78 +192,28 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	}
 
 
+	/**
+	 * jpegoptim/optipng are shipped as jniLibs (lib*.so under src/main/jniLibs/<abi>/) rather
+	 * than assets, precisely so the OS extracts the right ABI's copy to
+	 * getApplicationInfo().nativeLibraryDir at install time. That's the one app-private
+	 * location SELinux permits executing from (since API 29, W^X blocks exec from a regular
+	 * writable data/cache directory an app extracted a file into itself).
+	 */
 	static void setupBinaries(Activity context) {
-		try {
-			boolean update = true;
-			final int ver = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
-			SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(context);
-			if(pm.getInt(LASTVER, 0) == ver)
-				update = false;
-			else {
-				App.debug("Updating binaries from " + pm.getInt(LASTVER, 0) + " to " + ver);
-				Editor ed = pm.edit();
-				ed.putInt(LASTVER, ver);
-				ed.commit();
-			}
-			getFile(context, "jpegoptim", update);
-			getFile(context, "optipng", update);
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			Toast.makeText(context, R.string.ioerror, Toast.LENGTH_LONG).show();
-			context.finish();
-		}
+		String libDir = context.getApplicationInfo().nativeLibraryDir;
+		if(new File(libDir, "libjpegoptim.so").exists() && new File(libDir, "liboptipng.so").exists())
+			return;
+
+		// no matching ABI was packaged for this device
+		new AlertDialog.Builder(context)
+			.setTitle(context.getString(R.string.arch))
+			.setMessage(context.getString(R.string.sendmail))
+			.setNegativeButton(android.R.string.no, new DialogHandler(context))
+			.setPositiveButton(android.R.string.yes, new DialogHandler(context))
+			.setIcon(android.R.drawable.ic_dialog_email)
+			.create().show();
 	}
 
-	private static String detectCpu() {
-		if(Build.SUPPORTED_ABIS.length > 0) {
-			for(String abi : Build.SUPPORTED_ABIS) {
-				if(abi.startsWith("arm64") || abi.startsWith("aarch64"))
-					return "arm64";
-				if(abi.startsWith("x86_64"))
-					return "x86_64";
-				if(abi.startsWith("armeabi") || abi.startsWith("arm"))
-					return "arm";
-				if(abi.startsWith("x86"))
-					return "x86";
-			}
-		}
-
-		return null;
-	}
-
-	private static void getFile(Activity context, final String name, boolean update) throws IOException {
-		String binary = detectCpu();
-		if(binary == null) {
-			new AlertDialog.Builder(context)
-				.setTitle(context.getString(R.string.arch))
-				.setMessage(context.getString(R.string.sendmail))
-				.setNegativeButton(android.R.string.no, new DialogHandler(context))
-				.setPositiveButton(android.R.string.yes, new DialogHandler(context))
-				.setIcon(android.R.drawable.ic_dialog_email)
-				.create().show();
-		} else {
-			final File file = new File(context.getFilesDir(), name);
-			if (update || !file.exists())
-				try {
-					App.debug("extracting " + name);
-					context.getFilesDir().mkdirs();
-					final InputStream in = context.getAssets().open(name + '/' + binary);
-					final FileOutputStream out = new FileOutputStream(file);
-					final byte[] buf = new byte[65536];
-					int len;
-					while ((len = in.read(buf)) > 0)
-						out.write(buf, 0, len);
-					in.close();
-					out.close();
-					Runtime.getRuntime().exec(new String[]{"chmod", "755", file.getAbsolutePath()});
-				} catch (final IOException ex) {
-					ex.printStackTrace();
-					return;
-				}
-		}
-	}
 	abstract String getExt();
 	abstract String version();
 

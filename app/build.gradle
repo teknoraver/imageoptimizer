@@ -22,6 +22,15 @@ android {
     buildFeatures {
         buildConfig true
     }
+    packagingOptions {
+        // jniLibs here are jpegoptim/optipng shipped as lib*.so so the OS extracts them
+        // to applicationInfo.nativeLibraryDir, the one app-private location SELinux
+        // permits executing from. That requires them to actually be extracted as real
+        // files at install time rather than left compressed/mmapped inside the APK.
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
     signingConfigs {
         if (hasKeystore) {
             release {
