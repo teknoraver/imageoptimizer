@@ -1,7 +1,7 @@
 package net.teknoraver.imageoptimizer;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -9,26 +9,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 
+import androidx.documentfile.provider.DocumentFile;
+import androidx.exifinterface.media.ExifInterface;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.PermissionChecker;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.PermissionChecker;
+import android.provider.MediaStore;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,27 +51,31 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 class Image {
-	String path;
+	String uri;
+	String name;
 	boolean compress;
 	long size;
 	long date;
 	Bitmap thumb;
 	private static final DateFormat dateParser = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
 
-	Image(String f, long s, long d, boolean c) {
-		path = f;
+	Image(String u, String n, long s, long d, boolean c) {
+		uri = u;
+		name = n;
 		size = s;
 		date = d;
 		compress = c;
 	}
 
 	String getName() {
-		return path.substring(path.lastIndexOf('/') + 1);
+		return name;
 	}
 
 	long getDate() {
-		try {
-			ExifInterface ei = new ExifInterface(path);
+		try (InputStream in = App.getContext().getContentResolver().openInputStream(Uri.parse(uri))) {
+			if (in == null)
+				return date;
+			ExifInterface ei = new ExifInterface(in);
 			String exifDate = ei.getAttribute(ExifInterface.TAG_DATETIME);
 			/* no EXIF, return file date */
 			if (exifDate == null)
@@ -98,7 +110,7 @@ class Sorter implements Comparator<Image> {
 		}
 		switch(mode) {
 		case NAME:
-			return lhs.path.compareToIgnoreCase(rhs.path);
+			return lhs.name.compareToIgnoreCase(rhs.name);
 		case SIZE:
 			return (int)Math.signum(lhs.size - rhs.size);
 		case DATE:
@@ -120,19 +132,16 @@ class Sorter implements Comparator<Image> {
 	}
 
 	private int id2mode(int newmode) {
-		switch(newmode) {
-		case R.id.sortby_name:
+		if (newmode == R.id.sortby_name)
 			return NAME;
-		case R.id.sortby_size:
+		if (newmode == R.id.sortby_size)
 			return SIZE;
-		case R.id.sortby_date:
-		default:
-			return DATE;
-		}
+		return DATE;
 	}
 }
 
-public class Browser extends ListActivity implements FileFilter, OnClickListener {
+public class Browser extends ListActivity implements OnClickListener {
+	private static final int PERMISSION_REQUEST = 1;
 	private ProgressDialog pd;
 	private ListView list;
 	private ArrayList<Image> all = new ArrayList<Image>();
@@ -159,10 +168,18 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		Optimizer.setupBinaries(this);
 	}
 
+	private static String readImagesPermission() {
+		return Build.VERSION.SDK_INT >= 33
+			? android.Manifest.permission.READ_MEDIA_IMAGES
+			: android.Manifest.permission.READ_EXTERNAL_STORAGE;
+	}
+
 	private void startScan() {
-		if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-		    != PermissionChecker.PERMISSION_GRANTED)
-			ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+		if (ContextCompat.checkSelfPermission(this, readImagesPermission())
+		    != PermissionChecker.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this, new String[]{readImagesPermission()}, PERMISSION_REQUEST);
+			return;
+		}
 
 		go.setEnabled(false);
 		setListAdapter(null);
@@ -173,13 +190,22 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		new FileScanner().execute();
 	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == PERMISSION_REQUEST && grantResults.length > 0
+		    && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+			startScan();
+	}
+
 	private class FileScanner extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void ... v) {
-			for(String path : PathSelector.getPaths()) {
-				File file = new File(path);
-				if(file.isDirectory())
-					scan(file);
+			scanMediaStore(all);
+			for(String treeUri : PathSelector.getPaths()) {
+				DocumentFile dir = DocumentFile.fromTreeUri(Browser.this, Uri.parse(treeUri));
+				if(dir != null)
+					scanSaf(dir, all);
 			}
 			Collections.sort(all, new Sorter());
 
@@ -215,44 +241,74 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		return true;
 	}
 
-	private void scan(File file) {
-		File children[] = file.listFiles(this);
-		file = null;
-		if (children != null)
-			for (File child : children) {
-				if (child.isDirectory())
-					scan(child);
-				else {
-					Cursor c = db.query("images", new String[]{"COUNT(path)"}, "path=?", new String[]{child.getAbsolutePath()}, null, null, null);
-					c.moveToFirst();
-					all.add(new Image(child.getAbsolutePath(), child.length(), child.lastModified(),
-						c.getInt(0) == 0));
-					c.close();
-				}
+	private void scanMediaStore(ArrayList<Image> out) {
+		ContentResolver cr = getContentResolver();
+		String[] projection = {
+			MediaStore.Images.Media._ID,
+			MediaStore.Images.Media.DISPLAY_NAME,
+			MediaStore.Images.Media.SIZE,
+			MediaStore.Images.Media.DATE_MODIFIED,
+		};
+		String selection = MediaStore.Images.Media.MIME_TYPE + "=? OR " + MediaStore.Images.Media.MIME_TYPE + "=?";
+		String[] args = {"image/jpeg", "image/png"};
+		try (Cursor c = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, selection, args, null)) {
+			if(c == null)
+				return;
+			int idIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+			int nameIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+			int sizeIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.SIZE);
+			int dateIdx = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_MODIFIED);
+			while(c.moveToNext()) {
+				String name = c.getString(nameIdx);
+				if(name == null || name.charAt(0) == '.' || !isWanted(name))
+					continue;
+				Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, c.getLong(idIdx));
+				addImage(out, uri, name, c.getLong(sizeIdx), c.getLong(dateIdx) * 1000);
 			}
+		}
 	}
 
-	@Override
-	public boolean accept(File pathname) {
-		if(pathname.getName().charAt(0) == '.')
-			return false;
-		if(pathname.isDirectory())
-			return true;
-		return	pm.getBoolean(Settings.JPG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".jpg") ||
-			pm.getBoolean(Settings.PNG, true) && pathname.toString().toLowerCase(Locale.US).endsWith(".png");
+	private void scanSaf(DocumentFile dir, ArrayList<Image> out) {
+		DocumentFile[] children = dir.listFiles();
+		if(children == null)
+			return;
+		for(DocumentFile child : children) {
+			if(child.isDirectory()) {
+				scanSaf(child, out);
+				continue;
+			}
+			String name = child.getName();
+			if(name == null || name.charAt(0) == '.' || !isWanted(name))
+				continue;
+			addImage(out, child.getUri(), name, child.length(), child.lastModified());
+		}
+	}
+
+	private boolean isWanted(String name) {
+		String lower = name.toLowerCase(Locale.US);
+		return	pm.getBoolean(Settings.JPG, true) && lower.endsWith(".jpg") ||
+			pm.getBoolean(Settings.PNG, true) && lower.endsWith(".png");
+	}
+
+	private void addImage(ArrayList<Image> out, Uri uri, String name, long size, long date) {
+		String uriStr = uri.toString();
+		Cursor c = db.query("images", new String[]{"COUNT(path)"}, "path=?", new String[]{uriStr}, null, null, null);
+		c.moveToFirst();
+		boolean notSeen = c.getInt(0) == 0;
+		c.close();
+		out.add(new Image(uriStr, name, size, date, notSeen));
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-		case R.id.menu_settings:
+		int id = item.getItemId();
+		if (id == R.id.menu_settings) {
 			startActivity(new Intent(this, Settings.class));
 			return true;
-		case R.id.menu_all:
-		case R.id.menu_none:
+		} else if (id == R.id.menu_all || id == R.id.menu_none) {
 			for(int i = 0; i < list.getCount(); i++) {
 				Image row = (Image)list.getItemAtPosition(i);
-				row.compress = item.getItemId() == R.id.menu_all;
+				row.compress = id == R.id.menu_all;
 			}
 			for(int i = 0; i < list.getChildCount(); i++) {
 				View row = list.getChildAt(i);
@@ -261,22 +317,19 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 				int top = b.getPaddingTop();
 				int right = b.getPaddingRight();
 				int bottom = b.getPaddingBottom();
-				if(item.getItemId() == R.id.menu_all)
+				if(id == R.id.menu_all)
 					b.setBackgroundResource(R.drawable.borderh);
 				else
 					b.setBackgroundResource(R.drawable.border);
 				b.setPadding(left, top, right, bottom);
 			}
-			go.setEnabled(item.getItemId() == R.id.menu_all);
-//			((ImageAdapter)list.getAdapter()).notifyDataSetChanged();
+			go.setEnabled(id == R.id.menu_all);
 			return true;
-		case R.id.sortby_size:
-		case R.id.sortby_name:
-		case R.id.sortby_date:
-			Collections.sort(all, sorter.by(item.getItemId()));
+		} else if (id == R.id.sortby_size || id == R.id.sortby_name || id == R.id.sortby_date) {
+			Collections.sort(all, sorter.by(id));
 			refresh();
 			return true;
-		case R.id.menu_refresh:
+		} else if (id == R.id.menu_refresh) {
 			startScan();
 			return true;
 		}
@@ -289,7 +342,7 @@ public class Browser extends ListActivity implements FileFilter, OnClickListener
 		for(int i = 0; i < list.getCount(); i++) {
 			Image row = (Image)list.getItemAtPosition(i);
 			if(row.compress)
-				files.add(row.path);
+				files.add(row.uri);
 		}
 
 		ArrayList<Optimizer> optimizers = OptimizerActivity.createOptimizers(files);
@@ -394,32 +447,24 @@ class ImageAdapter extends ArrayAdapter<Image>
 
 		@Override
 		protected Void doInBackground(Void... params) {
-/*			try { Thread.sleep(200); } catch (InterruptedException e) { }
-
-			Rect bounds = new Rect();
-			iv.getDrawingRect(bounds);
-
-			Rect listBounds = new Rect(list.getScrollX(), list.getScrollY(), list.getScrollX() + list.getWidth(), list.getScrollY() + list.getHeight());
-
-			App.debug("bounds " + bounds);
-			App.debug("listBounds " + listBounds);
-
-			if(!Rect.intersects(listBounds, bounds)) {
-				App.debug("skipping invisible " + path);
-				return null;
-			}*/
-
-			// App.debug("decoding " + image.path);
+			ContentResolver cr = getContext().getContentResolver();
+			Uri u = Uri.parse(image.uri);
 
 			BitmapFactory.Options boundOpts = new BitmapFactory.Options();
 			boundOpts.inJustDecodeBounds = true;
-			scaledbitmap = BitmapFactory.decodeFile(image.path, boundOpts);
+			try (InputStream in = cr.openInputStream(u)) {
+				if(in != null)
+					BitmapFactory.decodeStream(in, null, boundOpts);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
 
 			BitmapFactory.Options scaleOpts = new BitmapFactory.Options();
 			scaleOpts.inSampleSize = 1;
 			// round scale value to smaller power of two
 			if (boundOpts.outHeight > height || boundOpts.outWidth > width) {
-				scaleOpts.inSampleSize = (int)Math.pow(2, /*Math.getExponent(Math.max(boundOpts.outWidth / W, boundOpts.outHeight / H))*/
+				scaleOpts.inSampleSize = (int)Math.pow(2,
 					Math.ceil(
 						Math.log(Math.max(boundOpts.outWidth / width, boundOpts.outHeight / height))
 						/ Math.log(2)
@@ -427,7 +472,12 @@ class ImageAdapter extends ArrayAdapter<Image>
 				);
 			}
 
-			scaledbitmap = BitmapFactory.decodeFile(image.path, scaleOpts);
+			try (InputStream in = cr.openInputStream(u)) {
+				if(in != null)
+					scaledbitmap = BitmapFactory.decodeStream(in, null, scaleOpts);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			image.thumb = scaledbitmap;
 

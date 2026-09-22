@@ -39,21 +39,18 @@ class Jpegoptim extends Optimizer {
 			args.add("-m" + quality);
 		if(preserve)
 			args.add("-p");
-		if(outdir != null)
-			args.add("-od" + outdir);
 
 		params = new String[args.size() + 1];
 		args.toArray(params);
 	}
 
 	@Override
-	protected void parseOutput(String line) {
+	protected Result parseOutput(String originalUri, String line) {
 //		App.debug("jpegoptim: '" + line + "'");
 		String res[] = line.split(",");
 		if(res[7].equals("error"))
-			notifyObservers(new Result());
-		else
-			notifyObservers(new Result(res[0], Integer.parseInt(res[4]), Integer.parseInt(res[5]), res[7].equals("optimized")));
+			return new Result();
+		return new Result(originalUri, Integer.parseInt(res[4]), Integer.parseInt(res[5]), res[7].equals("optimized"));
 	}
 
 	@Override

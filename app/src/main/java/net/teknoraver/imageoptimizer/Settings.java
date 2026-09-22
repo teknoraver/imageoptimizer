@@ -2,7 +2,7 @@ package net.teknoraver.imageoptimizer;
 
 import java.util.List;
 
-import com.lamerman.FileDialog;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -10,9 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
@@ -121,7 +121,7 @@ public class Settings extends PreferenceActivity {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			if (preference.getKey().equals(OUT))
-				preference.setSummary(value.toString());
+				preference.setSummary(dirLabel(preference.getContext(), value.toString()));
 			else if (preference.getKey().equals(JPEGQ))
 				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary, value));
 			else if (preference.getKey().equals(LOSSY))
@@ -164,14 +164,24 @@ public class Settings extends PreferenceActivity {
 			super.onActivityResult(requestCode, resultCode, data);
 			return;
 		}
-		String newPath = data.getStringExtra(FileDialog.RESULT_PATH);
-		if(newPath == null)
+		if(data == null || data.getData() == null)
 			return;
+		Uri treeUri = data.getData();
+		getContentResolver().takePersistableUriPermission(treeUri,
+			Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+		String newPath = treeUri.toString();
 		PreferenceManager.getDefaultSharedPreferences(this)
 			.edit()
 			.putString(OUT, newPath)
 			.commit();
-		findPreference(OUT).setSummary(newPath);
+		findPreference(OUT).setSummary(dirLabel(this, newPath));
+	}
+
+	static String dirLabel(Context context, String treeUriStr) {
+		if(treeUriStr == null || treeUriStr.isEmpty())
+			return treeUriStr;
+		DocumentFile dir = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr));
+		return dir != null && dir.getName() != null ? dir.getName() : treeUriStr;
 	}
 
 	/** {@inheritDoc} */
@@ -280,16 +290,7 @@ class DirBrowser implements OnPreferenceClickListener
 
 	@Override
 	public boolean onPreferenceClick(Preference preference) {
-		Intent intent = new Intent(App.getContext(), FileDialog.class);
-/*		if(activity == null) {
-			activity = App.getContext();
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		}*/
-		intent	.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
-			.putExtra(FileDialog.CAN_SELECT_DIR, true)
-			.putExtra(FileDialog.SELECTION_MODE, FileDialog.MODE_OPEN)
-			.putExtra(FileDialog.FORMAT_FILTER, new String[]{".jpg", ".png"});
-		activity.startActivityForResult(intent, ADDPATH);
+		activity.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), ADDPATH);
 		return false;
 	}
 }

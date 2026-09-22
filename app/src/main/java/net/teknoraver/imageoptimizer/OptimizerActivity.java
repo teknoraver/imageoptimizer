@@ -9,21 +9,23 @@ import java.util.Vector;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 public class OptimizerActivity extends Activity implements Observer {
 	public static final String OPTIMIZER = "optim";
 	private static final int NOTIFICATION_OPTIMIZING = 0;
+	private static final int WRITE_REQUEST = 1;
 	private ArrayList<Optimizer> optimizers;
 	private TextView currentfile;
 	private TextView origs;
@@ -40,7 +43,6 @@ public class OptimizerActivity extends Activity implements Observer {
 	private long origsize, newsize;
 	private TextView currlabel;
 	private Optimizer currentOptim;
-	private ArrayList<String> compressed = new ArrayList<String>();
 	private SQLiteDatabase db;
 
 	@SuppressWarnings("unchecked")
@@ -61,15 +63,13 @@ public class OptimizerActivity extends Activity implements Observer {
 			App.debug("Intent: " + getIntent().getAction());
 			ArrayList<String> files = new ArrayList<String>();
 			if(Intent.ACTION_SEND.equals(getIntent().getAction())) {
-				String file = getRealPathFromURI((Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM));
-				if(file != null)
-					files.add(file);
+				Uri uri = (Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM);
+				if(uri != null)
+					files.add(uri.toString());
 			} else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()) && getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
-				for(Parcelable uri : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM)) {
-					String file = getRealPathFromURI((Uri)uri);
-					if(file != null)
-						files.add(file);
-				}
+				for(Parcelable p : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
+					if(p instanceof Uri)
+						files.add(p.toString());
 			optimizers = createOptimizers(files);
 			App.debug("optimizers: " + optimizers);
 		}
@@ -81,7 +81,48 @@ public class OptimizerActivity extends Activity implements Observer {
 		news = (TextView)findViewById(R.id.newsize);
 		saved = (TextView)findViewById(R.id.saved);
 
+		maybeRequestWriteAccessThenStart();
+	}
+
+	/**
+	 * On Android 11+, overwriting MediaStore images this app doesn't own requires
+	 * up-front user consent for the whole batch. Below API 30, or when writing into
+	 * a caller-chosen destination folder instead of in place, no such consent is needed.
+	 */
+	private void maybeRequestWriteAccessThenStart() {
+		if(Build.VERSION.SDK_INT >= 30 && !writingToCustomDir()) {
+			ArrayList<Uri> uris = new ArrayList<Uri>();
+			for(Optimizer o : optimizers)
+				for(String s : o.files)
+					uris.add(Uri.parse(s));
+			if(!uris.isEmpty()) {
+				PendingIntent pi = MediaStore.createWriteRequest(getContentResolver(), uris);
+				try {
+					startIntentSenderForResult(pi.getIntentSender(), WRITE_REQUEST, null, 0, 0, 0);
+					return;
+				} catch (IntentSender.SendIntentException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		update(null, null);
+	}
+
+	private boolean writingToCustomDir() {
+		for(Optimizer o : optimizers)
+			if(o.outdir != null)
+				return true;
+		return false;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == WRITE_REQUEST) {
+			// proceed regardless of the user's choice: declined items simply fail to write back
+			update(null, null);
+			return;
+		}
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override
@@ -93,7 +134,6 @@ public class OptimizerActivity extends Activity implements Observer {
 			optim.abort();
 		if(currentOptim != null)
 			currentOptim.abort();
-		mediaRefresh();
 	}
 
 	private void updateNotification(String ext, int curr, int count) {
@@ -118,22 +158,10 @@ public class OptimizerActivity extends Activity implements Observer {
 		ncb.setContentIntent(TaskStackBuilder.create(this)
 			.addParentStack(OptimizerActivity.class)
 			.addNextIntent(new Intent(this, OptimizerActivity.class))
-			.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
-		//ncb.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(), 0));
+			.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
 
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotificationManager.notify(NOTIFICATION_OPTIMIZING, ncb.build());
-	}
-
-	public String getRealPathFromURI(Uri contentUri) {
-		String res = null;
-		Cursor cursor = getContentResolver().query(contentUri, new String[]{MediaStore.Images.Media.DATA}, null, null, null);
-		if(cursor == null)
-			return null;
-		if(cursor.moveToFirst())
-			res = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-		cursor.close();
-		return res;
 	}
 
 	@Override
@@ -163,7 +191,6 @@ public class OptimizerActivity extends Activity implements Observer {
 				origsize += res.origsize;
 				if(res.compressed) {
 					newsize += res.newsize;
-					compressed.add(res.getName());
 				} else
 					newsize += res.origsize;
 
@@ -190,26 +217,21 @@ public class OptimizerActivity extends Activity implements Observer {
 					currentfile.setText(null);
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 					updateNotification(null, 0, 0);
-					mediaRefresh();
 				}
 			}
 		}
 	}
 
-	private void mediaRefresh() {
-		App.debug("refreshing paths");
-		if(!compressed.isEmpty())
-			MediaScannerConnection.scanFile(this, compressed.toArray(new String[0]), null, null);
-	}
-
 	static ArrayList<Optimizer> createOptimizers(ArrayList<String> files) {
+		ContentResolver cr = App.getContext().getContentResolver();
 		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(App.getContext());
 		Vector<String> jpgs = new Vector<String>(files.size());
 		Vector<String> pngs = new Vector<String>(files.size());
 		for(String file : files) {
-			if(file.toLowerCase(Locale.US).endsWith(".jpg"))
+			String name = ContentUtil.displayName(cr, Uri.parse(file)).toLowerCase(Locale.US);
+			if(name.endsWith(".jpg") || name.endsWith(".jpeg"))
 				jpgs.add(file);
-			else if(file.toLowerCase(Locale.US).endsWith(".png"))
+			else if(name.endsWith(".png"))
 				pngs.add(file);
 		}
 

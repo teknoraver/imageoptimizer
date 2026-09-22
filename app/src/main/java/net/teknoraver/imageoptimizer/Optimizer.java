@@ -2,16 +2,22 @@ package net.teknoraver.imageoptimizer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Vector;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
@@ -33,11 +39,13 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected Vector<String> files;
 	protected boolean preserve;
 	protected boolean run = true;
+	/** Destination SAF tree Uri (as a string) to copy optimized files into, or null to overwrite in place. */
 	protected String outdir;
 	protected String params[];
 	private int count;
 
 	static class Result {
+		/** The original content:// Uri (as a string) of the image, not the local cache file. */
 		String path;
 		long origsize;
 		long newsize;
@@ -56,7 +64,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 
 		String getName() {
-			return path.substring(path.lastIndexOf('/') + 1);
+			return ContentUtil.displayName(App.getContext().getContentResolver(), Uri.parse(path));
 		}
 	}
 
@@ -105,32 +113,82 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 			while(!files.isEmpty()) {
 				if(!run)
 					break;
-				String file = files.remove(0);
-//				App.debug("optimizer " + (Thread.currentThread().getName()) + " " + file);
+				String uriStr = files.remove(0);
+				Uri uri = Uri.parse(uriStr);
+				File cacheFile = null;
 				try {
-					params[params.length - 1] = file;
+					String name = ContentUtil.displayName(App.getContext().getContentResolver(), uri);
+					cacheFile = ContentUtil.copyToCache(App.getContext(), uri, name);
+					params[params.length - 1] = cacheFile.getAbsolutePath();
 					Process optimizer = Runtime.getRuntime().exec(params);
 					BufferedReader stdout = new BufferedReader(new InputStreamReader(optimizer.getInputStream()), 1024);
+					Result result;
 					try {
 						optimizer.waitFor();
 						String line = stdout.readLine();
-//						App.debug(line);
-						parseOutput(line);
+						result = parseOutput(uriStr, line);
 					} catch(Exception e) {
 						e.printStackTrace();
-						notifyObservers(new Result());
+						result = new Result();
 					}
 					stdout.close();
 					optimizer.destroy();
+
+					if(!result.error && result.compressed) {
+						try {
+							writeBack(uri, cacheFile);
+						} catch (IOException | SecurityException e) {
+							e.printStackTrace();
+							result = new Result();
+						}
+					}
+					notifyObservers(result);
 				} catch(IOException ioe) {
 					ioe.printStackTrace();
+					notifyObservers(new Result());
+				} finally {
+					if(cacheFile != null)
+						ContentUtil.deleteCacheDir(cacheFile);
 				}
-//				App.debug("done " + file);
 			}
 		}
 	}
 
-	protected abstract void parseOutput(String string);
+	/** Copies the optimized cache file back to its real destination: either the original
+	 *  image (in place) or a file of the same name inside the configured destination tree. */
+	private void writeBack(Uri original, File optimized) throws IOException {
+		if(outdir != null) {
+			DocumentFile destDir = DocumentFile.fromTreeUri(App.getContext(), Uri.parse(outdir));
+			if(destDir == null)
+				throw new IOException("cannot open destination " + outdir);
+			String name = optimized.getName();
+			DocumentFile existing = destDir.findFile(name);
+			if(existing != null)
+				existing.delete();
+			String mime = name.toLowerCase(Locale.US).endsWith(".png") ? "image/png" : "image/jpeg";
+			DocumentFile dest = destDir.createFile(mime, name);
+			if(dest == null)
+				throw new IOException("cannot create " + name + " in " + outdir);
+			copyFileToUri(optimized, dest.getUri());
+		} else
+			copyFileToUri(optimized, original);
+	}
+
+	private void copyFileToUri(File src, Uri dst) throws IOException {
+		ContentResolver cr = App.getContext().getContentResolver();
+		try (OutputStream out = cr.openOutputStream(dst, "wt")) {
+			if(out == null)
+				throw new IOException("cannot open " + dst + " for writing");
+			try (InputStream in = new FileInputStream(src)) {
+				byte[] buf = new byte[65536];
+				int len;
+				while((len = in.read(buf)) > 0)
+					out.write(buf, 0, len);
+			}
+		}
+	}
+
+	protected abstract Result parseOutput(String originalUri, String line);
 
 	void abort() {
 		run = false;
@@ -166,14 +224,18 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	}
 
 	private static String detectCpu() {
-		if(Build.CPU_ABI.startsWith("arm64") || Build.CPU_ABI.startsWith("aarch64"))
-			return "arm64";
-		if(Build.CPU_ABI.startsWith("arm"))
-			return "arm";
-		if(Build.CPU_ABI.startsWith("x86_64"))
-			return "x86_64";
-		if(Build.CPU_ABI.startsWith("x86"))
-			return "x86";
+		if(Build.SUPPORTED_ABIS.length > 0) {
+			for(String abi : Build.SUPPORTED_ABIS) {
+				if(abi.startsWith("arm64") || abi.startsWith("aarch64"))
+					return "arm64";
+				if(abi.startsWith("x86_64"))
+					return "x86_64";
+				if(abi.startsWith("armeabi") || abi.startsWith("arm"))
+					return "arm";
+				if(abi.startsWith("x86"))
+					return "x86";
+			}
+		}
 
 		return null;
 	}

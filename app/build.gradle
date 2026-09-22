@@ -1,30 +1,54 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+def hasKeystore = keystorePropertiesFile.exists()
+if (hasKeystore) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    namespace 'net.teknoraver.imageoptimizer'
+    compileSdk 37
+    buildToolsVersion '37.0.0'
 
     defaultConfig {
         applicationId "net.teknoraver.imageoptimizer"
-        minSdkVersion 16
-        targetSdkVersion 28
+        minSdkVersion 23
+        targetSdkVersion 37
         versionCode 19
         versionName "1.8.1"
-        multiDexEnabled true
+    }
+    buildFeatures {
+        buildConfig true
+    }
+    signingConfigs {
+        if (hasKeystore) {
+            release {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
     }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation project(':fileexplorer')
     implementation project(':seekbar')
-    implementation 'com.android.support:multidex:1.0.2'
-    implementation 'com.google.android.gms:play-services-ads:11.6.0'
+    implementation 'com.google.android.gms:play-services-ads:25.4.0'
+    implementation 'androidx.core:core:1.19.0'
+    implementation 'androidx.documentfile:documentfile:1.1.0'
+    implementation 'androidx.exifinterface:exifinterface:1.4.2'
 }

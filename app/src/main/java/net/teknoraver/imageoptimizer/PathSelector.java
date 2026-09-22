@@ -1,17 +1,16 @@
 package net.teknoraver.imageoptimizer;
 
-import java.io.File;
 import java.util.ArrayList;
 
-import com.lamerman.FileDialog;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -37,7 +36,9 @@ public class PathSelector extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		paths.remove(position);
+		String removed = paths.remove(position);
+		getContentResolver().releasePersistableUriPermission(Uri.parse(removed),
+			Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 		((PathAdapter)getListAdapter()).notifyDataSetChanged();
 	}
 
@@ -54,12 +55,7 @@ public class PathSelector extends ListActivity {
 
 	public void addPath(View v)
 	{
-		startActivityForResult(new Intent(getBaseContext(), FileDialog.class)
-			.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory().getPath())
-			.putExtra(FileDialog.CAN_SELECT_DIR, true)
-			.putExtra(FileDialog.SELECTION_MODE, FileDialog.MODE_OPEN)
-			.putExtra(FileDialog.FORMAT_FILTER, new String[]{".jpg", ".png"})
-			/*.putExtra(FileDialog.ONLY_SELECT_DIR, true)*/, ADDPATH);
+		startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), ADDPATH);
 	}
 
 	@Override
@@ -68,9 +64,12 @@ public class PathSelector extends ListActivity {
 			super.onActivityResult(requestCode, resultCode, data);
 			return;
 		}
-		String newPath = data.getStringExtra(FileDialog.RESULT_PATH);
-		if(newPath == null)
+		if(data == null || data.getData() == null)
 			return;
+		Uri treeUri = data.getData();
+		getContentResolver().takePersistableUriPermission(treeUri,
+			Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+		String newPath = treeUri.toString();
 		if(!paths.contains(newPath)) {
 			paths.add(newPath);
 			((PathAdapter)getListAdapter()).notifyDataSetChanged();
@@ -84,16 +83,6 @@ public class PathSelector extends ListActivity {
 		SharedPreferences values = App.getContext().getSharedPreferences(PATHS, MODE_PRIVATE);
 		for(Object o : values.getAll().values())
 			p.add(o.toString());
-
-		if(p.isEmpty()) {
-			final String[] builtins = {
-					Environment.getExternalStorageDirectory() + "/DCIM",
-					Environment.getExternalStorageDirectory() + "/Pictures/Screenshots",
-					"/mnt/extSdCard/DCIM"};
-			for(String path : builtins)
-				if(new File(path).isDirectory())
-					p.add(path);
-		}
 
 		return p;
 	}
@@ -111,7 +100,9 @@ class PathAdapter extends ArrayAdapter<String>
 		if(path == null)
 			path = new TextView(getContext());
 
-		path.setText(getItem(position));
+		String uriStr = getItem(position);
+		DocumentFile dir = DocumentFile.fromTreeUri(getContext(), Uri.parse(uriStr));
+		path.setText(dir != null && dir.getName() != null ? dir.getName() : uriStr);
 		path.setTextSize(20);
 		path.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_delete, 0);
 
