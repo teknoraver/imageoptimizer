@@ -6,17 +6,21 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 /*
- * Jpegoptim output sample is CSV format
- * foo.jpg,2048x1536,24bit,1000,200,80.00,optimized
- * bar.jpg,2048x1536,24bit,200,200,0.00,optimized
+ * Jpegoptim output sample is CSV format (RFC 4180, so the filename may be quoted and contain commas)
+ * foo.jpg,2048x1536,24bit,N,1000,200,80.00,optimized
+ * "b,ar.jpg",2048x1536,24bit,P,200,200,0.00,skipped
+ * baz.jpg,,,,,error
  *
  * 0	filename
  * 1	resolution
  * 2	color depth
- * 3	original size
- * 4	optimized size
- * 5	compression ratio
- * 6	optimized/skipped/error
+ * 3	N(ormal)/P(rogressive)
+ * 4	original size
+ * 5	optimized size
+ * 6	compression ratio
+ * 7	optimized/skipped/error
+ *
+ * Fields are indexed from the end, as the filename is the only one which can contain commas.
  */
 
 class Jpegoptim extends Optimizer {
@@ -25,8 +29,8 @@ class Jpegoptim extends Optimizer {
 	private boolean compress;
 	private int threshold;
 
-	Jpegoptim(Vector<String> f, int q, boolean p, int t, String o) {
-		super(f, q, p, o);
+	Jpegoptim(Vector<String> f, int q, boolean p, int t) {
+		super(f, q, p);
 		if(quality >= 0)
 			compress = true;
 		threshold = t;
@@ -48,9 +52,10 @@ class Jpegoptim extends Optimizer {
 	protected Result parseOutput(String originalUri, String line) {
 //		App.debug("jpegoptim: '" + line + "'");
 		String res[] = line.split(",");
-		if(res[7].equals("error"))
+		int n = res.length;
+		if(n < 8 || res[n - 1].equals("error"))
 			return new Result();
-		return new Result(originalUri, Integer.parseInt(res[4]), Integer.parseInt(res[5]), res[7].equals("optimized"));
+		return new Result(originalUri, Long.parseLong(res[n - 4]), Long.parseLong(res[n - 3]), res[n - 1].equals("optimized"));
 	}
 
 	@Override

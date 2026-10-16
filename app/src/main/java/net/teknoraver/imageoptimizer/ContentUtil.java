@@ -14,7 +14,7 @@ import android.provider.OpenableColumns;
 
 /**
  * Helpers for treating images identified by content:// Uri (MediaStore rows
- * or SAF documents) as local files, since jpegoptim/optipng are native
+ * or SAF documents) as local files, since jpegoptim/oxipng are native
  * binaries that only understand real filesystem paths.
  */
 final class ContentUtil {

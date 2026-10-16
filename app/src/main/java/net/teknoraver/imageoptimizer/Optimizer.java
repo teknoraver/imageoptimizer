@@ -8,11 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Locale;
 import java.util.Observable;
 import java.util.Vector;
-
-import androidx.documentfile.provider.DocumentFile;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,8 +29,6 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	protected Vector<String> files;
 	protected boolean preserve;
 	protected boolean run = true;
-	/** Destination SAF tree Uri (as a string) to copy optimized files into, or null to overwrite in place. */
-	protected String outdir;
 	protected String params[];
 	private int count;
 
@@ -61,11 +56,10 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 	}
 
-	Optimizer(Vector<String> f, int q, boolean p, String o) {
+	Optimizer(Vector<String> f, int q, boolean p) {
 		quality = q;
 		files = f;
 		preserve = p;
-		outdir = o;
 		count = files.size();
 	}
 
@@ -112,8 +106,10 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 				try {
 					String name = ContentUtil.displayName(App.getContext().getContentResolver(), uri);
 					cacheFile = ContentUtil.copyToCache(App.getContext(), uri, name);
-					params[params.length - 1] = cacheFile.getAbsolutePath();
-					Process optimizer = Runtime.getRuntime().exec(params);
+					// params is shared by all the worker threads, never modify it in place
+					String cmd[] = params.clone();
+					cmd[cmd.length - 1] = cacheFile.getAbsolutePath();
+					Process optimizer = Runtime.getRuntime().exec(cmd);
 					BufferedReader stdout = new BufferedReader(new InputStreamReader(optimizer.getInputStream()), 1024);
 					Result result;
 					try {
@@ -129,7 +125,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 
 					if(!result.error && result.compressed) {
 						try {
-							writeBack(uri, cacheFile);
+							copyFileToUri(cacheFile, uri);
 						} catch (IOException | SecurityException e) {
 							e.printStackTrace();
 							result = new Result();
@@ -147,26 +143,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		}
 	}
 
-	/** Copies the optimized cache file back to its real destination: either the original
-	 *  image (in place) or a file of the same name inside the configured destination tree. */
-	private void writeBack(Uri original, File optimized) throws IOException {
-		if(outdir != null) {
-			DocumentFile destDir = DocumentFile.fromTreeUri(App.getContext(), Uri.parse(outdir));
-			if(destDir == null)
-				throw new IOException("cannot open destination " + outdir);
-			String name = optimized.getName();
-			DocumentFile existing = destDir.findFile(name);
-			if(existing != null)
-				existing.delete();
-			String mime = name.toLowerCase(Locale.US).endsWith(".png") ? "image/png" : "image/jpeg";
-			DocumentFile dest = destDir.createFile(mime, name);
-			if(dest == null)
-				throw new IOException("cannot create " + name + " in " + outdir);
-			copyFileToUri(optimized, dest.getUri());
-		} else
-			copyFileToUri(optimized, original);
-	}
-
+	/** Copies the optimized cache file back over the original image. */
 	private void copyFileToUri(File src, Uri dst) throws IOException {
 		ContentResolver cr = App.getContext().getContentResolver();
 		try (OutputStream out = cr.openOutputStream(dst, "wt")) {
@@ -193,7 +170,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 
 
 	/**
-	 * jpegoptim/optipng are shipped as jniLibs (lib*.so under src/main/jniLibs/<abi>/) rather
+	 * jpegoptim/oxipng are shipped as jniLibs (lib*.so under src/main/jniLibs/<abi>/) rather
 	 * than assets, precisely so the OS extracts the right ABI's copy to
 	 * getApplicationInfo().nativeLibraryDir at install time. That's the one app-private
 	 * location SELinux permits executing from (since API 29, W^X blocks exec from a regular
@@ -201,7 +178,7 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 	 */
 	static void setupBinaries(Activity context) {
 		String libDir = context.getApplicationInfo().nativeLibraryDir;
-		if(new File(libDir, "libjpegoptim.so").exists() && new File(libDir, "liboptipng.so").exists())
+		if(new File(libDir, "libjpegoptim.so").exists() && new File(libDir, "liboxipng.so").exists())
 			return;
 
 		// no matching ABI was packaged for this device

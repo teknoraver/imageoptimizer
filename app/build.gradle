@@ -16,8 +16,8 @@ android {
         applicationId "net.teknoraver.imageoptimizer"
         minSdkVersion 23
         targetSdkVersion 37
-        versionCode 19
-        versionName "1.8.1"
+        versionCode 21
+        versionName "1.9.0"
     }
     buildFeatures {
         buildConfig true

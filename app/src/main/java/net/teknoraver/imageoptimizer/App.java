@@ -1,12 +1,40 @@
 package net.teknoraver.imageoptimizer;
 
 import android.app.Application;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.preference.PreferenceManager;
 
 public final class App extends Application {
 	private static App a;
 
 	public App() {
 		a = this;
+	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		dropOutputDir();
+	}
+
+	/**
+	 * Saving to a separate output directory was removed in 1.9.0: forget the directory
+	 * and release its persisted grant, unless it is also one of the search paths.
+	 */
+	private void dropOutputDir() {
+		SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
+		String out = pm.getString("savepath", null);
+		if(out != null && !PathSelector.getPaths().contains(out))
+			try {
+				getContentResolver().releasePersistableUriPermission(Uri.parse(out),
+					Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			}
+		if(pm.contains("savepath") || pm.contains("destdir"))
+			pm.edit().remove("savepath").remove("destdir").apply();
 	}
 
 	public static App getContext() {

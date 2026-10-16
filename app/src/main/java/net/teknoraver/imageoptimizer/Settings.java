@@ -2,15 +2,11 @@ package net.teknoraver.imageoptimizer;
 
 import java.util.List;
 
-import androidx.documentfile.provider.DocumentFile;
-
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -41,8 +37,6 @@ public class Settings extends PreferenceActivity {
 	static final String TIMESTAMP = "timestamp";
 	static final String THRESHOLD = "threshold";
 	static final String PNGQ = "pngquality";
-	static final String DEST = "destdir";
-	static final String OUT = "savepath";
 	static final String SEARCH = "search_path";
 
 	/**
@@ -94,10 +88,8 @@ public class Settings extends PreferenceActivity {
 		PreferenceCategory fakeHeader;
 		addPreferencesFromResource(R.xml.pref_general);
 		bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
-		bindPreferenceSummaryToValue(findPreference(OUT));
 
 		findPreference(SEARCH).setOnPreferenceClickListener(new Starter(this));
-		findPreference(OUT).setOnPreferenceClickListener(new DirBrowser(this));
 
 		// JPEG
 		fakeHeader = new PreferenceCategory(this);
@@ -120,9 +112,7 @@ public class Settings extends PreferenceActivity {
 	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
-			if (preference.getKey().equals(OUT))
-				preference.setSummary(dirLabel(preference.getContext(), value.toString()));
-			else if (preference.getKey().equals(JPEGQ))
+			if (preference.getKey().equals(JPEGQ))
 				preference.setSummary(App.getContext().getString(R.string.jpegquality_summary, value));
 			else if (preference.getKey().equals(LOSSY))
 				if((Boolean)value)
@@ -148,40 +138,12 @@ public class Settings extends PreferenceActivity {
 
 		if(preference.getKey().equals(JPEGQ))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(JPEGQ, 75));
-		else if(preference.getKey().equals(OUT))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getString(OUT, ""));
 		else if(preference.getKey().equals(LOSSY))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getBoolean(LOSSY, false));
 		else if(preference.getKey().equals(THRESHOLD))
 			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(THRESHOLD, 10));
 		else if(preference.getKey().equals(PNGQ))
-			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(PNGQ, 7));
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode != DirBrowser.ADDPATH) {
-			super.onActivityResult(requestCode, resultCode, data);
-			return;
-		}
-		if(data == null || data.getData() == null)
-			return;
-		Uri treeUri = data.getData();
-		getContentResolver().takePersistableUriPermission(treeUri,
-			Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-		String newPath = treeUri.toString();
-		PreferenceManager.getDefaultSharedPreferences(this)
-			.edit()
-			.putString(OUT, newPath)
-			.commit();
-		findPreference(OUT).setSummary(dirLabel(this, newPath));
-	}
-
-	static String dirLabel(Context context, String treeUriStr) {
-		if(treeUriStr == null || treeUriStr.isEmpty())
-			return treeUriStr;
-		DocumentFile dir = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr));
-		return dir != null && dir.getName() != null ? dir.getName() : treeUriStr;
+			sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, sp.getInt(PNGQ, 2));
 	}
 
 	/** {@inheritDoc} */
@@ -227,10 +189,8 @@ public class Settings extends PreferenceActivity {
 			addPreferencesFromResource(R.xml.pref_general);
 
 			bindPreferenceSummaryToValue(findPreference(TIMESTAMP));
-			bindPreferenceSummaryToValue(findPreference(OUT));
 
 			findPreference("search_path").setOnPreferenceClickListener(new Starter(null));
-			findPreference(OUT).setOnPreferenceClickListener(new DirBrowser(null));
 		}
 	}
 
@@ -275,22 +235,6 @@ class Starter implements OnPreferenceClickListener
 			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		}
 		context.startActivity(intent);
-		return false;
-	}
-}
-
-class DirBrowser implements OnPreferenceClickListener
-{
-	static final int ADDPATH = 1;
-	private Activity activity;
-
-	public DirBrowser(Activity c) {
-		activity = c;
-	}
-
-	@Override
-	public boolean onPreferenceClick(Preference preference) {
-		activity.startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), ADDPATH);
 		return false;
 	}
 }

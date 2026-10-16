@@ -86,11 +86,10 @@ public class OptimizerActivity extends Activity implements Observer {
 
 	/**
 	 * On Android 11+, overwriting MediaStore images this app doesn't own requires
-	 * up-front user consent for the whole batch. Below API 30, or when writing into
-	 * a caller-chosen destination folder instead of in place, no such consent is needed.
+	 * up-front user consent for the whole batch. Below API 30 no such consent is needed.
 	 */
 	private void maybeRequestWriteAccessThenStart() {
-		if(Build.VERSION.SDK_INT >= 30 && !writingToCustomDir()) {
+		if(Build.VERSION.SDK_INT >= 30) {
 			ArrayList<Uri> uris = new ArrayList<Uri>();
 			for(Optimizer o : optimizers)
 				for(String s : o.files) {
@@ -112,13 +111,6 @@ public class OptimizerActivity extends Activity implements Observer {
 			}
 		}
 		update(null, null);
-	}
-
-	private boolean writingToCustomDir() {
-		for(Optimizer o : optimizers)
-			if(o.outdir != null)
-				return true;
-		return false;
 	}
 
 	@Override
@@ -242,9 +234,6 @@ public class OptimizerActivity extends Activity implements Observer {
 		}
 
 		ArrayList<Optimizer> optimizers = new ArrayList<Optimizer>(2);
-		String destdir = null;
-		if(pm.getBoolean(Settings.DEST, false))
-			destdir = pm.getString(Settings.OUT, null);
 		if(!jpgs.isEmpty()) {
 			int quality = -1;
 			if(pm.getBoolean(Settings.LOSSY, true))
@@ -253,15 +242,14 @@ public class OptimizerActivity extends Activity implements Observer {
 				jpgs,
 				quality,
 				pm.getBoolean(Settings.TIMESTAMP, true),
-				pm.getInt(Settings.THRESHOLD, 10),
-				destdir));
+				pm.getInt(Settings.THRESHOLD, 10)));
 		}
 		if(!pngs.isEmpty())
-			optimizers.add(new Optipng(
+			optimizers.add(new Oxipng(
 				pngs,
-				pm.getInt(Settings.PNGQ, 1),
-				pm.getBoolean(Settings.TIMESTAMP, true),
-				destdir));
+				// old optipng based versions saved levels up to 8
+				Math.min(pm.getInt(Settings.PNGQ, 2), Oxipng.MAX_LEVEL),
+				pm.getBoolean(Settings.TIMESTAMP, true)));
 
 		return optimizers;
 	}

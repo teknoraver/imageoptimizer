@@ -9,8 +9,6 @@
 	<string name="alreadypath">Directory already in search path</string>
 	<string name="emptypaths">Search path is empty\nwill scan the whole photo library</string>
 	<string name="searchpath">Images search path</string>
-	<string name="destdir">Save images to a different directory</string>
-	<string name="savepath">Output directory</string>
 
 	<!-- JPEG -->
 	<string name="pref_title_lossy">Compress images</string>
@@ -26,5 +24,5 @@
 	<string name="pref_header_png">PNG Options</string>
 	<string name="dopng">Optimize PNG files</string>
 	<string name="pngquality">Optimization level</string>
-	<string name="pngquality_summary">Set optimization level to %d</string>
+	<string name="pngquality_summary">Set optimization level to %d (7 = max)</string>
 </resources>
