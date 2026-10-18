@@ -14,6 +14,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,16 +25,20 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.ContextCompat;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class OptimizerActivity extends Activity implements Observer {
 	public static final String OPTIMIZER = "optim";
 	private static final int NOTIFICATION_OPTIMIZING = 0;
 	private static final int WRITE_REQUEST = 1;
+	private static final int NOTIFICATION_REQUEST = 2;
 	private ArrayList<Optimizer> optimizers;
 	private TextView currentfile;
 	private TextView origs;
@@ -44,35 +49,17 @@ public class OptimizerActivity extends Activity implements Observer {
 	private TextView currlabel;
 	private Optimizer currentOptim;
 	private SQLiteDatabase db;
+	/** True from the start of a batch (including the write consent dialog) until it's done. */
+	private boolean running;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.optimizer);
 
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		optimizers = (ArrayList<Optimizer>)getIntent().getSerializableExtra(OPTIMIZER);
-
 		db = openOrCreateDatabase("images", MODE_PRIVATE, null);
-
-		// called via Intent
-		if(optimizers == null) {
-			Optimizer.setupBinaries(this);
-
-			App.debug("Intent: " + getIntent().getAction());
-			ArrayList<String> files = new ArrayList<String>();
-			if(Intent.ACTION_SEND.equals(getIntent().getAction())) {
-				Uri uri = (Uri)getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM);
-				if(uri != null)
-					files.add(uri.toString());
-			} else if(Intent.ACTION_SEND_MULTIPLE.equals(getIntent().getAction()) && getIntent().getExtras().containsKey(Intent.EXTRA_STREAM))
-				for(Parcelable p : (ArrayList<Parcelable>)getIntent().getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
-					if(p instanceof Uri)
-						files.add(p.toString());
-			optimizers = createOptimizers(files);
-			App.debug("optimizers: " + optimizers);
-		}
+		optimizers = optimizersFromIntent(getIntent());
 
 		currlabel = (TextView)findViewById(R.id.currlabel);
 		currentfile = (TextView)findViewById(R.id.currentfile);
@@ -81,7 +68,62 @@ public class OptimizerActivity extends Activity implements Observer {
 		news = (TextView)findViewById(R.id.newsize);
 		saved = (TextView)findViewById(R.id.saved);
 
+		running = true;
 		maybeRequestWriteAccessThenStart();
+	}
+
+	/**
+	 * Being singleTop, images shared while this activity is on top land here instead of
+	 * in onCreate(). Intents with no images, e.g. from the notification, just bring it up.
+	 */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		ArrayList<Optimizer> newOptimizers = optimizersFromIntent(intent);
+		if(newOptimizers.isEmpty())
+			return;
+		if(running) {
+			Toast.makeText(this, R.string.busy, Toast.LENGTH_LONG).show();
+			return;
+		}
+
+		setIntent(intent);
+		optimizers = newOptimizers;
+		origsize = newsize = 0;
+		progress.setProgress(0);
+		currentfile.setText(null);
+		origs.setText(null);
+		news.setText(null);
+		saved.setText(null);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+		running = true;
+		maybeRequestWriteAccessThenStart();
+	}
+
+	/** The optimizers prepared by Browser, or new ones for the images shared via SEND/SEND_MULTIPLE. */
+	@SuppressWarnings("unchecked")
+	private ArrayList<Optimizer> optimizersFromIntent(Intent intent) {
+		ArrayList<Optimizer> o = (ArrayList<Optimizer>)intent.getSerializableExtra(OPTIMIZER);
+		if(o != null)
+			return o;
+
+		// called via Intent
+		Optimizer.setupBinaries(this);
+
+		App.debug("Intent: " + intent.getAction());
+		ArrayList<String> files = new ArrayList<String>();
+		if(Intent.ACTION_SEND.equals(intent.getAction())) {
+			Uri uri = (Uri)intent.getExtras().getParcelable(Intent.EXTRA_STREAM);
+			if(uri != null)
+				files.add(uri.toString());
+		} else if(Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction()) && intent.getExtras().containsKey(Intent.EXTRA_STREAM))
+			for(Parcelable p : (ArrayList<Parcelable>)intent.getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
+				if(p instanceof Uri)
+					files.add(p.toString());
+		o = createOptimizers(files);
+		App.debug("optimizers: " + o);
+		return o;
 	}
 
 	/**
@@ -110,6 +152,20 @@ public class OptimizerActivity extends Activity implements Observer {
 				}
 			}
 		}
+		start();
+	}
+
+	/**
+	 * Starts the batch, asking first for the Android 13+ notification permission. It's
+	 * requested only now so that it never stacks over the write consent dialog; if it's
+	 * denied the progress notification just doesn't show.
+	 */
+	private void start() {
+		if(Build.VERSION.SDK_INT >= 33
+		    && ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+		       != PackageManager.PERMISSION_GRANTED)
+			ActivityCompat.requestPermissions(this,
+				new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_REQUEST);
 		update(null, null);
 	}
 
@@ -117,7 +173,7 @@ public class OptimizerActivity extends Activity implements Observer {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == WRITE_REQUEST) {
 			// proceed regardless of the user's choice: declined items simply fail to write back
-			update(null, null);
+			start();
 			return;
 		}
 		super.onActivityResult(requestCode, resultCode, data);
@@ -136,8 +192,9 @@ public class OptimizerActivity extends Activity implements Observer {
 
 	private void updateNotification(String ext, int curr, int count) {
 		NotificationCompat.Builder ncb =
-			new NotificationCompat.Builder(this)
-			.setSmallIcon(R.drawable.notify);
+			new NotificationCompat.Builder(this, App.CHANNEL)
+			.setSmallIcon(R.drawable.notify)
+			.setOnlyAlertOnce(true);
 
 		if(ext == null) {
 			ncb.setContentTitle(getString(R.string.notify_done))
@@ -211,6 +268,7 @@ public class OptimizerActivity extends Activity implements Observer {
 
 					currlabel.setText(getString(R.string.optimizing, currentOptim.getExt()));
 				} else { // all done
+					running = false;
 					currlabel.setText(R.string.done);
 					currentfile.setText(null);
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import androidx.core.app.NotificationChannelCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 public final class App extends Application {
+	static final String CHANNEL = "progress";
 	private static App a;
 
 	public App() {
@@ -17,6 +20,12 @@ public final class App extends Application {
 	public void onCreate() {
 		super.onCreate();
 		dropOutputDir();
+		// since API 26 notifications posted without a channel are silently dropped;
+		// low importance, as progress updates shouldn't make any sound
+		NotificationManagerCompat.from(this).createNotificationChannel(
+			new NotificationChannelCompat.Builder(CHANNEL, NotificationManagerCompat.IMPORTANCE_LOW)
+				.setName(getString(R.string.notify_channel))
+				.build());
 	}
 
 	/**

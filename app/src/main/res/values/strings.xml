@@ -14,6 +14,7 @@
 	<string name="title_browse">Browse</string>
 	<string name="optimizing">Optimizing %s files</string>
 	<string name="done">Done!</string>
+	<string name="busy">Optimization in progress, share the images again when done</string>
 	<string name="origsize">Original size</string>
 	<string name="newsize">Optimized size</string>
 	<string name="saved">Saved space</string>
@@ -35,6 +36,7 @@
 	<string name="support_intent">Send email…</string>
 
 	<!-- notifications -->
+	<string name="notify_channel">Optimization progress</string>
 	<string name="notify_optimizing">Optimization in progress</string>
 	<string name="notify_done">Optimization completed</string>
 	<string name="notify_progress">%1$s optimization %2$d/%3$d</string>
