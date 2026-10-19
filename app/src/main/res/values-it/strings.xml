@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<string name="app_name">Image Optimizer</string>
+	<string name="menu_settings">Impostazioni</string>
+	<string name="hint">Seleziona alcune foto e premi Ottimizza</string>
+	<string name="optimize">Ottimizza</string>
+	<string name="scanning_title">Ricerca</string>
+	<string name="scanning_txt">Ricerca delle immagini in corso</string>
+	<string name="sall">Seleziona tutto</string>
+	<string name="snone">Deseleziona tutto</string>
+	<string name="refresh">Aggiorna</string>
+	<string name="title_activity_compress">Ottimizzazione immagini</string>
+	<string name="title_browse">Sfoglia</string>
+	<string name="optimizing">Ottimizzazione dei file %s</string>
+	<string name="done">Fatto!</string>
+	<string name="busy">Ottimizzazione in corso, condividi di nuovo le immagini quando è finita</string>
+	<string name="origsize">Dimensione originale</string>
+	<string name="newsize">Dimensione ottimizzata</string>
+	<string name="saved">Spazio risparmiato</string>
+	<string name="ioerror">Errore del filesystem</string>
+	<string name="noimages">Nessuna immagine trovata</string>
+	<string name="image">immagine</string>
+	<string name="date">data</string>
+	<string name="name">nome</string>
+	<string name="size">dimensione</string>
+	<string name="sort">Ordina per</string>
+
+	<!-- notifications -->
+	<string name="notify_channel">Avanzamento ottimizzazione</string>
+	<string name="notify_optimizing">Ottimizzazione in corso</string>
+	<string name="notify_done">Ottimizzazione completata</string>
+	<string name="notify_progress">Ottimizzazione %1$s %2$d/%3$d</string>
+</resources>

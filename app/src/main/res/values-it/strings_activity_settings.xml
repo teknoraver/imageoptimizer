@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- General -->
+	<string name="title_activity_settings">Impostazioni</string>
+	<string name="timestamp">Mantieni la data dei file</string>
+	<string name="timestamp_summary">Non supportato su tutti i sistemi</string>
+	<string name="pref_header_general">Generali</string>
+	<string name="add_path">Aggiungi cartella</string>
+	<string name="alreadypath">Cartella già presente tra quelle di ricerca</string>
+	<string name="emptypaths">Nessuna cartella di ricerca:\nverrà analizzata tutta la libreria foto</string>
+	<string name="searchpath">Cartelle in cui cercare le immagini</string>
+
+	<!-- JPEG -->
+	<string name="pref_title_lossy">Comprimi le immagini</string>
+	<string name="pref_title_lossless">Ottimizza senza perdita di qualità</string>
+	<string name="title_quality">Livello di qualità</string>
+	<string name="jpegquality_summary">Imposta la qualità JPEG al %d%%</string>
+	<string name="threshold">Soglia</string>
+	<string name="threshold_summary">Salta se si risparmia meno del %d%%</string>
+	<string name="pref_header_jpeg">Opzioni JPEG</string>
+	<string name="dojpeg">Ottimizza i file JPEG</string>
+
+	<!-- PNG -->
+	<string name="pref_header_png">Opzioni PNG</string>
+	<string name="dopng">Ottimizza i file PNG</string>
+	<string name="pngquality">Livello di ottimizzazione</string>
+	<string name="pngquality_summary">Imposta il livello di ottimizzazione a %d (7 = massimo)</string>
+</resources>

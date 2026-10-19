@@ -11,19 +11,11 @@ import java.io.Serializable;
 import java.util.Observable;
 import java.util.Vector;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.DialogInterface.OnClickListener;
 import android.net.Uri;
-import android.widget.Toast;
 
 abstract class Optimizer extends Observable implements Serializable, Runnable {
 	private static final long serialVersionUID = 2968942827262809844L;
-
-	private static final String CPUINFO = "/proc/cpuinfo";
 
 	protected int quality;
 	protected Vector<String> files;
@@ -168,57 +160,6 @@ abstract class Optimizer extends Observable implements Serializable, Runnable {
 		return count;
 	}
 
-
-	/**
-	 * jpegoptim/oxipng are shipped as jniLibs (lib*.so under src/main/jniLibs/<abi>/) rather
-	 * than assets, precisely so the OS extracts the right ABI's copy to
-	 * getApplicationInfo().nativeLibraryDir at install time. That's the one app-private
-	 * location SELinux permits executing from (since API 29, W^X blocks exec from a regular
-	 * writable data/cache directory an app extracted a file into itself).
-	 */
-	static void setupBinaries(Activity context) {
-		String libDir = context.getApplicationInfo().nativeLibraryDir;
-		if(new File(libDir, "libjpegoptim.so").exists() && new File(libDir, "liboxipng.so").exists())
-			return;
-
-		// no matching ABI was packaged for this device
-		new AlertDialog.Builder(context)
-			.setTitle(context.getString(R.string.arch))
-			.setMessage(context.getString(R.string.sendmail))
-			.setNegativeButton(android.R.string.no, new DialogHandler(context))
-			.setPositiveButton(android.R.string.yes, new DialogHandler(context))
-			.setIcon(android.R.drawable.ic_dialog_email)
-			.create().show();
-	}
-
 	abstract String getExt();
 	abstract String version();
-
-	private static class DialogHandler implements OnClickListener {
-		private Activity context;
-
-		public DialogHandler(Activity a) {
-			context = a;
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			if(which == DialogInterface.BUTTON_POSITIVE) {
-				Intent intent = new Intent(Intent.ACTION_SEND);
-				intent.setType("message/rfc822");
-				intent.putExtra(Intent.EXTRA_EMAIL, new String[] {context.getString(R.string.email)});
-				intent.putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.support_sub));
-				intent.putExtra(Intent.EXTRA_TEXT, context.getString(R.string.support_msg));
-				File file = new File(CPUINFO);
-				if (!file.exists() || !file.canRead()) {
-					Toast.makeText(context, context.getString(R.string.support_atterror), Toast.LENGTH_LONG).show();
-					context.finish();
-					return;
-				}
-				intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + CPUINFO));
-				context.startActivity(Intent.createChooser(intent, context.getString(R.string.support_intent)));
-			}
-			context.finish();
-		}
-	}
 }

@@ -154,8 +154,6 @@ public class Browser extends ListActivity implements OnClickListener {
 
 		PowerManager power = (PowerManager)getSystemService(POWER_SERVICE);
 		scanWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "imageoptimizer:scan");
-
-		Optimizer.setupBinaries(this);
 	}
 
 	private static String readImagesPermission() {

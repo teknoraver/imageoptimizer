@@ -26,15 +26,6 @@
 	<string name="size">size</string>
 	<string name="sort">Sort by</string>
 
-	<!-- ask for support -->
-	<string name="arch">Unsupported device</string>
-	<string name="sendmail">Your device is unsupported by Image Optimizer.\nWould you like to ask the developer to add support for your device?</string>
-	<string name="email">technoboy85@gmail.com</string>
-	<string name="support_sub">Image Optimizer arch Support</string>
-	<string name="support_msg">Hi,\n\nMy phone is unsupported by Image Optimizer, please add support for it.\n\nHere are attached some anonymous info on the CPU so you can do it!</string>
-	<string name="support_atterror">Attachment Error</string>
-	<string name="support_intent">Send email…</string>
-
 	<!-- notifications -->
 	<string name="notify_channel">Optimization progress</string>
 	<string name="notify_optimizing">Optimization in progress</string>
