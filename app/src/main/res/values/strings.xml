@@ -14,6 +14,10 @@
 	<string name="title_browse">Browse</string>
 	<string name="optimizing">Optimizing %s files</string>
 	<string name="done">Done!</string>
+	<plurals name="errors">
+		<item quantity="one">%d image could not be optimized</item>
+		<item quantity="other">%d images could not be optimized</item>
+	</plurals>
 	<string name="busy">Optimization in progress, share the images again when done</string>
 	<string name="origsize">Original size</string>
 	<string name="newsize">Optimized size</string>

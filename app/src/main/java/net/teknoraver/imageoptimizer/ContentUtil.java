@@ -10,6 +10,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 
 /**
@@ -35,6 +36,29 @@ final class ContentUtil {
 		}
 		String last = uri.getLastPathSegment();
 		return last != null ? last : uri.toString();
+	}
+
+	/**
+	 * Google Photos shares local photos through its own read only provider, embedding the
+	 * MediaStore Uri of the photo in the path: use that one instead, which can be written
+	 * once the user consents. Any other Uri is returned as it is.
+	 */
+	static Uri writableUri(ContentResolver cr, Uri uri) {
+		if(MediaStore.AUTHORITY.equals(uri.getAuthority()))
+			return uri;
+		for(String segment : uri.getPathSegments()) {
+			if(!segment.startsWith("content://" + MediaStore.AUTHORITY + "/"))
+				continue;
+			Uri media = Uri.parse(segment);
+			// make sure it still exists, and that it can be read
+			try (Cursor c = cr.query(media, new String[]{MediaStore.MediaColumns._ID}, null, null, null)) {
+				if(c != null && c.moveToFirst())
+					return media;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return uri;
 	}
 
 	/** Copies the content behind uri into a private cache file the native optimizers can operate on. */

@@ -14,6 +14,11 @@
 	<string name="title_browse">Sfoglia</string>
 	<string name="optimizing">Ottimizzazione dei file %s</string>
 	<string name="done">Fatto!</string>
+	<plurals name="errors">
+		<item quantity="one">%d immagine non è stata ottimizzata</item>
+		<item quantity="many">%d immagini non sono state ottimizzate</item>
+		<item quantity="other">%d immagini non sono state ottimizzate</item>
+	</plurals>
 	<string name="busy">Ottimizzazione in corso, condividi di nuovo le immagini quando è finita</string>
 	<string name="origsize">Dimensione originale</string>
 	<string name="newsize">Dimensione ottimizzata</string>

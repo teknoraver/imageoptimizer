@@ -46,6 +46,7 @@ public class OptimizerActivity extends Activity implements Observer {
 	private TextView saved;
 	private ProgressBar progress;
 	private long origsize, newsize;
+	private int errors;
 	private TextView currlabel;
 	private Optimizer currentOptim;
 	private SQLiteDatabase db;
@@ -90,6 +91,7 @@ public class OptimizerActivity extends Activity implements Observer {
 		setIntent(intent);
 		optimizers = newOptimizers;
 		origsize = newsize = 0;
+		errors = 0;
 		progress.setProgress(0);
 		currentfile.setText(null);
 		origs.setText(null);
@@ -111,14 +113,18 @@ public class OptimizerActivity extends Activity implements Observer {
 		// called via Intent
 		App.debug("Intent: " + intent.getAction());
 		ArrayList<String> files = new ArrayList<String>();
+		// the extras can be missing, e.g. when the system restores the activity after an update
 		if(Intent.ACTION_SEND.equals(intent.getAction())) {
-			Uri uri = (Uri)intent.getExtras().getParcelable(Intent.EXTRA_STREAM);
+			Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 			if(uri != null)
-				files.add(uri.toString());
-		} else if(Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction()) && intent.getExtras().containsKey(Intent.EXTRA_STREAM))
-			for(Parcelable p : (ArrayList<Parcelable>)intent.getExtras().getParcelableArrayList(Intent.EXTRA_STREAM))
-				if(p instanceof Uri)
-					files.add(p.toString());
+				files.add(ContentUtil.writableUri(getContentResolver(), uri).toString());
+		} else if(Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
+			ArrayList<Parcelable> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+			if(uris != null)
+				for(Parcelable p : uris)
+					if(p instanceof Uri)
+						files.add(ContentUtil.writableUri(getContentResolver(), (Uri)p).toString());
+		}
 		o = createOptimizers(files);
 		App.debug("optimizers: " + o);
 		return o;
@@ -235,6 +241,8 @@ public class OptimizerActivity extends Activity implements Observer {
 			if(res != null) {
 				if(res.error) {
 					App.debug("error optimizing: " + res.path);
+					errors++;
+					progress.setProgress(progress.getProgress() + 1);
 					return;
 				}
 
@@ -268,7 +276,7 @@ public class OptimizerActivity extends Activity implements Observer {
 				} else { // all done
 					running = false;
 					currlabel.setText(R.string.done);
-					currentfile.setText(null);
+					currentfile.setText(errors == 0 ? null : getResources().getQuantityString(R.plurals.errors, errors, errors));
 					getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 					updateNotification(null, 0, 0);
 				}
